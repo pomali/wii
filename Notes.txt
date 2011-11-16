@@ -1,0 +1,22 @@
+Sources:
+	http://wiibrew.org/wiki/Development_Tools
+
+Possibilities:
+	Core development:
+		devkitPPC, maybe with libogc
+	Framework libs:
+		wit - encapsulates Wii controllers through event system, has goal to be thoroughly documented library
+		MLib - wrapper of libogc, GX for drawing, libpng, FreeTypeGFX
+	Graphics:
+		GRRLIB - wrapper for Nintendo GX core
+		gl2gx - OpenGL wrapper on GX for libogc , only alpha
+		libwiisprite - sprite lib uses GX as rendering engine
+	Misc:
+		LibNoise - noise for terrains/textures 
+		libmii	- for native avatars (mii-s)
+		LibProfile - code profiling
+		Tracing - trace log to files
+		Box2D - 2D physics (Angry Birds uses box2D ??:D)
+		Bullet - 3D physics (pro)
+		SQLite - database
+		WiiPy - python for wii
