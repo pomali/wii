@@ -20,3 +20,9 @@ Possibilities:
 		Bullet - 3D physics (pro)
 		SQLite - database
 		WiiPy - python for wii
+
+http://wiibrew.org/
+http://hackmii.com/
+http://codemii.com/
+http://wiiuse.net/?nav=docs
+http://www.codemii.com/category/wii-%20programming-tutorials/
