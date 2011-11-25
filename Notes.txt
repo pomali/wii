@@ -30,3 +30,4 @@ http://www.codemii.com/category/wii-%20programming-tutorials/
 http://wiki.openmoko.org/wiki/Technical:Accelerometer_Fundamentals
 http://www.wiigee.com/download_files/gesture_recognition_with_a_wii_controller-schloemer_poppinga_henze_boll.pdf
 http://www.nuiteq.com/downloads/files/Gesture_analyzing.pdf
+http://perception.inrialpes.fr/people/Cuzzolin/review.html#Detection

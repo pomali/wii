@@ -54,7 +54,8 @@ wiimote-test.o: /media/data/Work/wii/HelloWorld/source/wiimote-test.c \
  /opt/devkitpro/libogc/include/wiiuse/wpad.h \
  /opt/devkitpro/libogc/include/wiiuse/wiiuse.h \
  /opt/devkitpro/libogc/include/bte/bte.h \
- /opt/devkitpro/libogc/include/bte/bd_addr.h
+ /opt/devkitpro/libogc/include/bte/bd_addr.h \
+ /media/data/Work/wii/HelloWorld/source/wiimote-test.h
 
 /opt/devkitpro/libogc/include/ogcsys.h:
 
@@ -167,3 +168,5 @@ wiimote-test.o: /media/data/Work/wii/HelloWorld/source/wiimote-test.c \
 /opt/devkitpro/libogc/include/bte/bte.h:
 
 /opt/devkitpro/libogc/include/bte/bd_addr.h:
+
+/media/data/Work/wii/HelloWorld/source/wiimote-test.h:

@@ -1,4 +1,4 @@
-#Sun Nov 20 00:16:22 CET 2011
+#Fri Nov 25 13:57:05 CET 2011
 eclipse.preferences.version=1
 environment/project/0.2018418574=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\n<environment append\="true" appendContributed\="true">\n<variable delimiter\="\:" name\="WIILOAD" operation\="append" value\="10.100.1.121"/>\n</environment>\n
-environment/project/0.2018418574.1549665626=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\n<environment append\="true" appendContributed\="true">\n<variable delimiter\="\:" name\="WIILOAD" operation\="append" value\="10.100.1.121"/>\n</environment>\n
+environment/project/0.2018418574.1549665626=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\n<environment append\="true" appendContributed\="true">\n<variable delimiter\="\:" name\="WIILOAD" operation\="replace" value\="tcp\:10.100.1.121"/>\n</environment>\n

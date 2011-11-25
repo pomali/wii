@@ -286,10 +286,47 @@
 </scannerConfigBuildInfo>
 </storageModule>
 <storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
+<buildTargets>
+<target name="run" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+<buildCommand>make</buildCommand>
+<buildArguments/>
+<buildTarget>run</buildTarget>
+<stopOnError>true</stopOnError>
+<useDefaultCommand>true</useDefaultCommand>
+<runAllBuilders>true</runAllBuilders>
+</target>
+<target name="build" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+<buildCommand>make</buildCommand>
+<buildArguments/>
+<buildTarget/>
+<stopOnError>true</stopOnError>
+<useDefaultCommand>true</useDefaultCommand>
+<runAllBuilders>true</runAllBuilders>
+</target>
+<target name="clean" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+<buildCommand>make</buildCommand>
+<buildArguments/>
+<buildTarget>clean</buildTarget>
+<stopOnError>true</stopOnError>
+<useDefaultCommand>true</useDefaultCommand>
+<runAllBuilders>true</runAllBuilders>
+</target>
+</buildTargets>
+</storageModule>
 </cconfiguration>
 <cconfiguration id="0.2018418574.1549665626">
 <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="0.2018418574.1549665626" moduleId="org.eclipse.cdt.core.settings" name="WiiConfigS">
-<externalSettings/>
+<externalSettings>
+<externalSetting languages="org.eclipse.cdt.build.core.settings.holder.inType.237054223">
+<entry flags="" kind="includePath" name="${DEVKITPPC}/powerpc-eabi/include/c++/4.6.1/powerpc-eabi"/>
+<entry flags="" kind="includePath" name="${DEVKITPPC}/powerpc-eabi/include/c++/4.6.1/"/>
+<entry flags="" kind="includePath" name="${DEVKITPPC}/powerpc-eabi/include/c++/"/>
+<entry flags="" kind="includePath" name="${DEVKITPPC}/powerpc-eabi/include/"/>
+<entry flags="" kind="includePath" name="${DEVKITPPC}/lib/gcc/powerpc-eabi/4.6.1/include/"/>
+<entry flags="" kind="includePath" name="${DEVKITPRO}/libogc/include"/>
+</externalSetting>
+</externalSettings>
 <extensions>
 <extension id="org.eclipse.cdt.core.VCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 <extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -306,7 +343,7 @@
 <builder id="org.eclipse.cdt.build.core.settings.default.builder.571113984" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="org.eclipse.cdt.build.core.settings.default.builder"/>
 <tool id="org.eclipse.cdt.build.core.settings.holder.libs.537628171" name="holder for library settings" superClass="org.eclipse.cdt.build.core.settings.holder.libs"/>
 <tool id="org.eclipse.cdt.build.core.settings.holder.388235321" name="Assembly" superClass="org.eclipse.cdt.build.core.settings.holder">
-<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.1999943200" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
+<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.1999943200" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
 <listOptionValue builtIn="false" value="&quot;${DEVKITPRO}/libogc/include&quot;"/>
 <listOptionValue builtIn="false" value="&quot;${DEVKITPPC}/lib/gcc/powerpc-eabi/4.6.1/include/&quot;"/>
 <listOptionValue builtIn="false" value="&quot;${DEVKITPPC}/powerpc-eabi/include/&quot;"/>
@@ -578,6 +615,34 @@
 </scannerConfigBuildInfo>
 </storageModule>
 <storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
+<buildTargets>
+<target name="run" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+<buildCommand>make</buildCommand>
+<buildArguments/>
+<buildTarget>run</buildTarget>
+<stopOnError>true</stopOnError>
+<useDefaultCommand>true</useDefaultCommand>
+<runAllBuilders>true</runAllBuilders>
+</target>
+<target name="build" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+<buildCommand>make</buildCommand>
+<buildArguments/>
+<buildTarget/>
+<stopOnError>true</stopOnError>
+<useDefaultCommand>true</useDefaultCommand>
+<runAllBuilders>true</runAllBuilders>
+</target>
+<target name="clean" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+<buildCommand>make</buildCommand>
+<buildArguments/>
+<buildTarget>clean</buildTarget>
+<stopOnError>true</stopOnError>
+<useDefaultCommand>true</useDefaultCommand>
+<runAllBuilders>true</runAllBuilders>
+</target>
+</buildTargets>
+</storageModule>
 </cconfiguration>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">

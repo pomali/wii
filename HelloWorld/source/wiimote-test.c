@@ -16,6 +16,7 @@
 #include <ctype.h>
 #include <math.h>
 #include <wiiuse/wpad.h>
+#include "wiimote-test.h"
 
 static GXRModeObj *rmode = NULL;
 
