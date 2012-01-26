@@ -1,0 +1,9 @@
+/*
+.*
+!.gitignore
+!WPPTest/
+!README
+!Notes.txt
+WPPTest/build/
+WPPTest/*.dol
+WPPTest/*.elf

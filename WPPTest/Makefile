@@ -17,7 +17,7 @@ include $(DEVKITPPC)/wii_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source
+SOURCES		:=	source source/gfx
 DATA		:=	data  
 INCLUDES	:=
 
@@ -33,7 +33,7 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-lwiiuse -lbte -logc -lm
+LIBS	:=	 -lgrrlib -lfreetype -lfat -ljpeg -lpngu -lpng -lz -lwiiuse -lbte -logc -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -108,7 +108,10 @@ clean:
 run:
 	wiiload $(TARGET).dol
 
-
+#--------------------------------------------------------------------------------
+dolphin:
+	dolphin-emu -e $(TARGET).dol &
+	
 #---------------------------------------------------------------------------------
 else
 
@@ -127,7 +130,15 @@ $(OUTPUT).elf: $(OFILES)
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	$(bin2o)
-
+	
+#---------------------------------------------------------------------------------
+# This rule links in binary data with the .ttf extension
+#---------------------------------------------------------------------------------
+%.ttf.o	:	%.ttf
+#---------------------------------------------------------------------------------
+	@echo $(notdir $<)
+	$(bin2o)
+	
 -include $(DEPENDS)
 
 #---------------------------------------------------------------------------------
