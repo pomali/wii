@@ -18,7 +18,7 @@
 using namespace std;
 
 #define O_TYPE int
-#define O_SYMBOL_COUNT 2
+#define O_SYMBOL_COUNT 10
 #define HMM_PROB_TYPE double
 #define HMM_STATE_COUNT 2
 #define WIN true
@@ -272,13 +272,15 @@ HMM_PROB_TYPE HMM::Viterbi(Observation o, Terminal& term) {
 		line << o.at(observ_char) << ":";
 		for (int dest_state = 0; dest_state < HMM_STATE_COUNT; dest_state++) {
 			previous_max = 0;
+			line<<"max(";
 			for (int source_state = 0; source_state < HMM_STATE_COUNT; source_state++) {
 				previous_max = max(previous_max, (V[observ_char][source_state] //observ_char bcs V[0] is 0 chars read
 													* trans_P[source_state][dest_state]
 													* emiss_P[dest_state][o.at(observ_char)])); // o.at(observ_char) bsc its char at position 0
+				line << "," << V[observ_char][source_state] << "*" << trans_P[source_state][dest_state] << "*"<<emiss_P[dest_state][o.at(observ_char)];
 			}
 			tmp_line.push_back(previous_max);
-			line << " " << previous_max;
+			line << ")=" << previous_max<< "|";
 		}
 		V.push_back(tmp_line);
 		term.addLine(line.str());
@@ -315,14 +317,17 @@ vector<vector<HMM_PROB_TYPE> > HMM::Forward(Observation o, Terminal& term) {
 		tmp_line.clear();
 		line.str("");
 		line << o.at(observ_char) << ":";
-		for (int dest_state = 1; dest_state < HMM_STATE_COUNT; dest_state++) {
+		for (int dest_state = 0; dest_state < HMM_STATE_COUNT; dest_state++) {
 			sum = 0;
+			line << "(";
 			for (int source_state = 0; source_state < HMM_STATE_COUNT; source_state++) {
 				sum += F[observ_char][source_state]
 						* trans_P[source_state][dest_state];
+				line <<"+"<<F[observ_char][source_state]<<"*"<<trans_P[source_state][dest_state];
 			}
+			line<<")*"<< emiss_P[dest_state][o.at(observ_char)];
 			tmp_line.push_back(sum * emiss_P[dest_state][o.at(observ_char)]); // o.at(observ_char) bsc its char at position 0
-			line << " " << sum * emiss_P[dest_state][o.at(observ_char)];
+			line << "=" << sum * emiss_P[dest_state][o.at(observ_char)] << "|";
 		}
 		F.push_back(tmp_line);
 		term.addLine(line.str());
@@ -333,13 +338,13 @@ vector<vector<HMM_PROB_TYPE> > HMM::Forward(Observation o, Terminal& term) {
 
 
 vector<vector<HMM_PROB_TYPE> > HMM::Backward(Observation o, Terminal& term) {
-	vector<vector<HMM_PROB_TYPE> > B;//FIXME:WRONG:B[i][j] probability of being in state j after i-th symbol from o
+	vector<vector<HMM_PROB_TYPE> > B;//B[i][j] probability of emmiting sequence (o.at(o.length()-i) to o.end() (+-1)) a state j
 	vector<HMM_PROB_TYPE> tmp_line;
 	HMM_PROB_TYPE sum;
 	stringstream line;
 
 	term.addLine("Backward");
-	//fill F with starting probabilities
+	//fill B with starting probabilities
 	for (vector<HMM_PROB_TYPE>::const_iterator it = start_P.begin(); it
 			< start_P.end(); it++) {
 		tmp_line.push_back(1);
@@ -355,34 +360,33 @@ vector<vector<HMM_PROB_TYPE> > HMM::Backward(Observation o, Terminal& term) {
 		line << *observ_rit << ":";
 		for (int dest_state = HMM_STATE_COUNT-1; dest_state >= 0 ; dest_state--) {
 			sum = 0;
-			for (int source_state = HMM_STATE_COUNT-1 ; source_state >= 0; source_state--) {
+			for (int source_state = 0 ; source_state < HMM_STATE_COUNT; source_state++) {
 				sum += B.back()[source_state]
 						* trans_P[dest_state][source_state]
 						* emiss_P[source_state][*observ_rit];
+				line << "+" <<B.back()[source_state]<<"*"<< trans_P[dest_state][source_state] << "*" << emiss_P[source_state][*observ_rit];
 			}
 			tmp_line.push_back(sum);
-			line << " " << sum;
+			line << "=" << sum << "|";
 		}
 
 		B.push_back(tmp_line);
 		term.addLine(line.str());
 	}
-	reverse(B.begin(), B.end());
+	reverse(B.begin(), B.end()); //reversed to get B in standard order B[i]
 	return B;
 }
 
 void HMM::Train(Observation o) {
-
+//TODO: Forward-backward/baum-welch training
 }
 
 int restart = 0;
 
 int main(int argc, char **argv) {
-
 //	WPADData *wd;
 //	WPAD_Init();
 //	WPAD_SetDataFormat(0, WPAD_FMT_BTNS_ACC);
-
 
 //	GRRLIB_Init();
 //	GRRLIB_Settings.antialias = true;
@@ -397,10 +401,7 @@ int main(int argc, char **argv) {
 	Observation obs;
 	obs.putNew(0);
 	obs.putNew(1);
-//	obs.putNew(2);
-//	obs.putNew(3);
 	obs.putNew(0);
-//	obs.putNew(2);
 	obs.putNew(1);
 	hmm1.Print(gt);
 	hmm1.Backward(obs, gt);
@@ -408,9 +409,10 @@ int main(int argc, char **argv) {
 	hmm1.Viterbi(obs, gt);
 	gt.addLine("dopisane");
 	gt.printAll();
-//	GRRLIB_Render();
 
-	while(1);
+//	while(1)
+//	{	gt.printAll();
+//		GRRLIB_Render();};
 
 //	while (!restart) {
 //		WPAD_ReadPending(WPAD_CHAN_ALL, NULL);
@@ -425,6 +427,7 @@ int main(int argc, char **argv) {
 //		gt.printAll();
 //		GRRLIB_Render();
 //	}
+	while(1);
 
 	exit(0);
 }
