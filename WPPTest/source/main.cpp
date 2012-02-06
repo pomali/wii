@@ -5,28 +5,21 @@
  *      Author: pom
  */
 
-//#define FORWII
-#define O_TYPE int
-#define O_SYMBOL_COUNT 5
-#define HMM_PROB_TYPE double
-#define HMM_STATE_COUNT 3
-#define VERBOSITY 1
+#include "define.h"
 
+#ifdef FORWII
+#include <wiiuse/wpad.h>
+#include <grrlib.h>
+#include "FreeMonoBold_ttf.h"
+#endif
 
 //#include <stdlib.h>
 #include <vector>
 #include <sstream>
 #include <algorithm>
 #include <iostream>
+
 #include "Terminal.hpp"
-
-
-#ifdef FORWII
-//#include <wiiuse/wpad.h>
-#include <grrlib.h>
-#include "FreeMonoBold_ttf.h"
-#endif
-
 
 using namespace std;
 
@@ -508,12 +501,18 @@ void HMM::Train(vector<Observation> observations, Terminal& term) {
 		Print(term);
 #endif
 		line.str("");
-		line << "b:" << before << " a:" << after << " d:" << after - before
-				<< " n:" << repetitions;
+		line << "before:" << before << " after:" << after << " delta:" << after
+				- before << "repetiton:" << repetitions;
 #if VERBOSITY > 0
 		term.addLine(line.str());
 #endif
 	}
+#if VERBOSITY > 1
+	line.str("");
+	line << "repetitons:" << repetitions;
+	term.addLine(line.str());
+#endif
+
 #if VERBOSITY > 2
 	Print(term);
 	term.addLine("end");
@@ -572,7 +571,14 @@ int main(int argc, char **argv) {
 	hmm1.Print(gt);
 	hmm1.Train(o, gt);
 	hmm1.Print(gt);
-	gt.printAll();
+	gt.addLine("aaaaaa");
+
+#ifdef FORWII
+	while(1) {
+		gt.printAll();
+		VIDEO_WaitVSync();
+	}
+#endif
 
 	//	while (!restart) {
 	//		WPAD_ReadPending(WPAD_CHAN_ALL, NULL);

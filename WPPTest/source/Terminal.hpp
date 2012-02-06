@@ -7,6 +7,12 @@
 
 #ifndef TERMINAL_HPP_
 #define TERMINAL_HPP_
+#include "define.h"
+
+#ifdef FORWII
+#include <grrlib.h>
+#include "FreeMonoBold_ttf.h"
+#endif
 
 #include <vector>
 #include <string>
