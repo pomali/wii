@@ -6,30 +6,29 @@
  */
 
 //#define FORWII
-
-#include <stdlib.h>
-#include <vector>
-#include <map>
-#include <sstream>
-#include <algorithm>
-#include <iostream>
-
-#ifdef FORWII
-#include <wiiuse/wpad.h>
-#include <grrlib.h>
-#include "FreeMonoBold_ttf.h"
-#endif
-#ifndef FORWII
-#include <stdio.h>
-#endif
-
-using namespace std;
-
 #define O_TYPE int
 #define O_SYMBOL_COUNT 5
 #define HMM_PROB_TYPE double
 #define HMM_STATE_COUNT 3
 #define VERBOSITY 1
+
+
+//#include <stdlib.h>
+#include <vector>
+#include <sstream>
+#include <algorithm>
+#include <iostream>
+#include "Terminal.hpp"
+
+
+#ifdef FORWII
+//#include <wiiuse/wpad.h>
+#include <grrlib.h>
+#include "FreeMonoBold_ttf.h"
+#endif
+
+
+using namespace std;
 
 class Observation {
 private:
@@ -79,119 +78,6 @@ void Observation::putNew(O_TYPE value) {
 O_TYPE Observation::at(int n) {
 	return _observ_hist.at(n);
 }
-
-class Terminal { //TODO: dorobit class STDTerminal na vypis na stdout
-protected:
-	vector<string> lines;
-	int _lastline;
-public:
-	void clear();
-	virtual void printAll() = 0;
-	virtual void addLine(string s) = 0;
-};
-
-void Terminal::clear() {
-	lines.clear();
-}
-
-class STDTerminal: public Terminal {
-public:
-	STDTerminal();
-	void clear();
-	void printAll();
-	void addLine(string s);
-#ifdef FORWII
-private:
-	void *xfb;
-	GXRModeObj *rmode;
-#endif
-};
-
-void STDTerminal::clear() {
-	lines.clear();
-	printf("\x1b[2J");
-}
-
-STDTerminal::STDTerminal() {
-#ifdef FORWII
-	//	TODO:osetrit ak je video uz initnute
-	VIDEO_Init();
-	rmode = VIDEO_GetPreferredMode(NULL);
-	xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
-	console_init(xfb, 20, 20, rmode->fbWidth, rmode->xfbHeight, rmode->fbWidth
-			* VI_DISPLAY_PIX_SZ);
-	VIDEO_Configure(rmode);
-	VIDEO_SetNextFramebuffer(xfb);
-	VIDEO_SetBlack(FALSE);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
-	if (rmode->viTVMode & VI_NON_INTERLACE)
-	VIDEO_WaitVSync();
-#endif
-}
-
-void STDTerminal::addLine(string s) {
-	lines.push_back(s);
-	printf("%s\n", s.c_str());
-#ifdef FORWII
-	VIDEO_WaitVSync();
-#endif
-}
-;
-void STDTerminal::printAll() {
-	printf("\x1b[2J");
-	vector<string>::const_iterator cii;
-	for (cii = lines.begin(); cii < lines.end(); cii++) {
-		printf("%s\n", (*cii).c_str());
-	}
-#ifdef FORWII
-	VIDEO_WaitVSync();
-#endif
-}
-
-#ifdef FORWII
-class GRRTerminal: public Terminal {
-private:
-	GRRLIB_ttfFont *_font;
-	int _size; //size of line
-	u32 _color; // color of letters
-	int _x, _y; // top left corner of "window"
-	int _pos; //position of cursor (last line written)
-public:
-	GRRTerminal(const u8* font_ttf, s32 font_ttf_size);
-	void addLine(string s);
-	void printAll();
-};
-
-GRRTerminal::GRRTerminal(const u8* font_ttf, s32 font_ttf_size) {
-	_lastline = 0;
-	_size = 15;
-	_color = 0xFFFFFFFF;
-	_x = 20;
-	_y = 20;
-	_pos = 0;
-	_font = GRRLIB_LoadTTF(font_ttf, font_ttf_size);
-
-	//	TODO:osetrit ak grrlib nieje initnute
-}
-
-void GRRTerminal::printAll() {
-	int pos = 0;
-	vector<string>::const_iterator cii;
-	GRRLIB_2dMode();
-	for (cii = lines.begin(); cii < lines.end(); cii++) {
-		GRRLIB_PrintfTTF(_x, _y + (_size * 1.1) * pos++, _font, (*cii).c_str(),
-				_size, _color);
-	}
-}
-
-void GRRTerminal::addLine(string s) {
-	lines.push_back(s);
-	GRRLIB_2dMode();
-	GRRLIB_PrintfTTF(_x, _y + (_size * 1.1) * _lastline++, _font, s.c_str(),
-			_size, _color);
-}
-#endif
 
 void printVV(vector<vector<HMM_PROB_TYPE> > V, Terminal & term) {
 	ostringstream line;
@@ -324,8 +210,8 @@ HMM_PROB_TYPE HMM::Viterbi(Observation o, Terminal& term) {
 						* emiss_P[dest_state][o.at(observ_char)])); // o.at(observ_char) bsc its char at position 0
 #if VERBOSITY >2
 				line << "," << V[observ_char][source_state] << "*"
-						<< trans_P[source_state][dest_state] << "*"
-						<< emiss_P[dest_state][o.at(observ_char)];
+				<< trans_P[source_state][dest_state] << "*"
+				<< emiss_P[dest_state][o.at(observ_char)];
 #endif
 			}
 #if VERBOSITY >2
@@ -385,7 +271,7 @@ vector<vector<HMM_PROB_TYPE> > HMM::Forward(Observation o, Terminal& term) {
 						* trans_P[source_state][dest_state];
 #if VERBOSITY > 2
 				line << "+" << F[observ_char][source_state] << "*"
-						<< trans_P[source_state][dest_state];
+				<< trans_P[source_state][dest_state];
 #endif
 			}
 			tmp_line.push_back(sum * emiss_P[dest_state][o.at(observ_char)]); // o.at(observ_char) bsc its char at position 0
@@ -444,8 +330,8 @@ vector<vector<HMM_PROB_TYPE> > HMM::Backward(Observation o, Terminal& term) {
 						* emiss_P[source_state][*observ_rit];
 #if VERBOSITY>2
 				line << "+" << B.back()[source_state] << "*"
-						<< trans_P[dest_state][source_state] << "*"
-						<< emiss_P[source_state][*observ_rit];
+				<< trans_P[dest_state][source_state] << "*"
+				<< emiss_P[source_state][*observ_rit];
 #endif
 			}
 			tmp_line.push_back(sum);
@@ -503,7 +389,6 @@ void HMM::Train(vector<Observation> observations, Terminal& term) {
 			o = *j;
 			F = Forward(o, term);
 			B = Backward(o, term);
-
 
 #if VERBOSITY > 3
 			term.addLine("b4");
@@ -569,7 +454,7 @@ void HMM::Train(vector<Observation> observations, Terminal& term) {
 					term.addLine("!!!!!!!!!!!!!!!!!!DELIS NULOU!!!!!!!!!!!!!!");
 #endif
 					trans_P[k][l] = 0.0;
-				} else{
+				} else {
 					trans_P[k][l] = e_trans_P[k][l] / sum;
 #if VERBOSITY > 3
 					line.str("");
@@ -595,9 +480,9 @@ void HMM::Train(vector<Observation> observations, Terminal& term) {
 				} else
 					emiss_P[k][b] = e_emiss_P[k][b] / sum;
 #if VERBOSITY > 3
-					line.str("");
-					line << k <<":"<< b <<" "<<e_emiss_P[k][b]<< "/" << sum;
-					term.addLine(line.str());
+				line.str("");
+				line << k <<":"<< b <<" "<<e_emiss_P[k][b]<< "/" << sum;
+				term.addLine(line.str());
 #endif
 			}
 		}
@@ -662,7 +547,6 @@ int main(int argc, char **argv) {
 	o1.putNew(1);
 	o1.putNew(2);
 
-
 	Observation o2;
 	o2.putNew(1);
 	o2.putNew(1);
@@ -683,44 +567,12 @@ int main(int argc, char **argv) {
 	o.push_back(o2);
 	o.push_back(o3);
 
-
-
-	//	hmm1.Print(gt);
-	//	hmm1.Backward(obs, gt);
-	//	hmm1.Forward(obs, gt);
-	//	hmm1.Viterbi(obs, gt);
-	//	hmm1.Forward(o0, gt);
-	//	hmm1.Forward(o1, gt);
-	//	hmm1.Forward(o2, gt);
-	//	vector<vector <HMM_PROB_TYPE> > F;
-	//	F = hmm1.Forward(o3, gt);
-	//	printVV(F,gt);
-	//	HMM_PROB_TYPE P;
-	//	for (int k = 0; k < hmm1.state_count; k++) {
-	//					P += F[o3.lenght()-1][k] * hmm1.trans_P[k][0];
-	//				}
-
-	//	a << " o3:"<< o3.lenght()<< " P:" << P;
-	//	gt.addLine(a.str());
-
+	hmm1.Backward(o0, gt);
+	hmm1.Forward(o0, gt);
 	hmm1.Print(gt);
-	a.str("");
-	a << fixed << hmm1.Viterbi(o4, gt)
-			<< " VITERBIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII";
-	gt.addLine(a.str());
 	hmm1.Train(o, gt);
-//	printVV(hmm1.Forward(o0, gt), gt);
 	hmm1.Print(gt);
-
-	a.str("");
-	a << hmm1.Viterbi(o4, gt)
-			<< " VITERBIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII";
-	gt.addLine(a.str());
-
 	gt.printAll();
-	//	while(1)
-	//	{	gt.printAll();
-	//		GRRLIB_Render();};
 
 	//	while (!restart) {
 	//		WPAD_ReadPending(WPAD_CHAN_ALL, NULL);
