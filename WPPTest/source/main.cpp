@@ -92,7 +92,6 @@ int main(int argc, char **argv) {
 	hmm1.Print(gt);
 	hmm1.Train(o, gt);
 	hmm1.Print(gt);
-	gt.addLine("aaaaaa");
 
 #ifdef FORWII
 	while(1) {
