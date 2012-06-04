@@ -3,6 +3,15 @@
  *
  *  Created on: Jan 22, 2012
  *      Author: pom
+ *
+ *    na to aby sme rozpoznali gesta tak musime mat HMM
+ *    na to aby sme mali HMM musime ho mat zapamatane alebo ho vytrenovat
+ *    HMM trenujeme tak ze mu predame vector<Observation>
+ *    Device class sa initne a potom pomocou ::get() vlozi do Observation nove data
+ *
+ *    Terminal je iba pomocna classa ktora vypisuje (GRRTerminal pouziva GRRLib, STDTerminal pouziva stdout)
+ *    pred pouzitim terminalu treba initnut grrlib
+ *
  */
 
 #include "define.h"
@@ -56,7 +65,7 @@ int main(int argc, char **argv) {
 	STDTerminal gt;
 
 	ostringstream a;
-	HMM hmm1;
+	HMM hmm1(gt);
 	Observation o0;
 	o0.putNew(1);
 	o0.putNew(1);
@@ -87,11 +96,11 @@ int main(int argc, char **argv) {
 	o.push_back(o2);
 	o.push_back(o3);
 
-	hmm1.Backward(o0, gt);
-	hmm1.Forward(o0, gt);
-	hmm1.Print(gt);
-	hmm1.Train(o, gt);
-	hmm1.Print(gt);
+	hmm1.Backward(o0);
+	hmm1.Forward(o0);
+	hmm1.Print();
+	hmm1.Train(o);
+	hmm1.Print();
 
 #ifdef FORWII
 	while(1) {
@@ -109,9 +118,11 @@ int main(int argc, char **argv) {
 	cout << fixed;
 	while (1) {
 		cout << "Zadaj int <0," << O_SYMBOL_COUNT << ")" << endl;
-		cin >> cislo;
+		cin >> dec >> cislo;
+		cout << cislo << endl;
+//		return 3;
 		o5.putNew(cislo);
-		cout << hmm1.Viterbi(o5, gt) << endl;
+		cout << hmm1.Viterbi(o5) << endl;
 	}
 #endif
 

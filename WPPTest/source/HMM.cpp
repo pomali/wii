@@ -3,22 +3,32 @@
  *
  *  Created on: Feb 6, 2012
  *      Author: pom
+ *
+ *
+ *
+ *
  */
 #include "define.h"
 #include "HMM.hpp"
 
-HMM::HMM(void) {
+/*
+ * Initialize blank HMM
+ *
+ *
+ */
+HMM::HMM(Terminal &terminal) : term(terminal) {
 	state_count = HMM_STATE_COUNT;
-	const HMM_PROB_TYPE s_p = 1.0 / state_count;
-	const HMM_PROB_TYPE e_p = 1.0 / O_SYMBOL_COUNT;
+	const HMM_PROB_TYPE s_p = 1.0 / state_count;	//default probability of being in state
+	const HMM_PROB_TYPE e_p = 1.0 / O_SYMBOL_COUNT;	//default probability of emmiting symbol in state
 	vector<HMM_PROB_TYPE> temp_e;
-	for (O_TYPE j = 0; j < O_SYMBOL_COUNT; j++)
-		temp_e.push_back(e_p);
 
 	for (int i = 0; i < state_count; i++)
-		start_P.push_back(s_p);
+			start_P.push_back(s_p);
 
-	for (int i = 0; i < state_count; i++) {
+	for (O_TYPE j = 0; j < O_SYMBOL_COUNT; j++)		//make temp_e into default vector of emission p.
+		temp_e.push_back(e_p);
+
+	for (int i = 0; i < state_count; i++) {		//fill emission p with
 		emiss_P.push_back(temp_e);
 		//		trans_P.push_back(start_P);
 	}
@@ -31,15 +41,13 @@ HMM::HMM(void) {
 			else
 				temp_e.push_back(0.0);
 		}
-
 		trans_P.push_back(temp_e);
 	}
-
 }
 
 //HMM::HMM(vector<Observation> observations) // construct HMM from observations
 
-void HMM::Print(Terminal& term) {
+void HMM::Print() {
 	ostringstream line;
 
 	term.addLine("Start_P");
@@ -67,9 +75,13 @@ void HMM::Print(Terminal& term) {
 		term.addLine(line.str());
 		line.str("");
 	}
+
+	line.str("");
+	line << state_count;
+	term.addLine(line.str());
 }
 
-HMM_PROB_TYPE HMM::Viterbi(Observation o, Terminal& term) {
+HMM_PROB_TYPE HMM::Viterbi(Observation o) {
 	vector<vector<HMM_PROB_TYPE> > V;//V[i][j] probability of most probable path ending in state j at i-th symbol of Observation o
 	vector<HMM_PROB_TYPE> tmp_line;
 	HMM_PROB_TYPE previous_max;
@@ -126,7 +138,7 @@ HMM_PROB_TYPE HMM::Viterbi(Observation o, Terminal& term) {
 	return previous_max;
 }
 
-vector<vector<HMM_PROB_TYPE> > HMM::Forward(Observation o, Terminal& term) {
+vector<vector<HMM_PROB_TYPE> > HMM::Forward(Observation o) {
 	//returns F[i][j] probability of emmiting i-th symbol in state j and sequence before
 	vector<vector<HMM_PROB_TYPE> > F; //F[i][j]probability of being in state j and emitting i-th symbol from o
 	vector<HMM_PROB_TYPE> tmp_line;
@@ -184,7 +196,7 @@ vector<vector<HMM_PROB_TYPE> > HMM::Forward(Observation o, Terminal& term) {
 	return F;
 }
 
-vector<vector<HMM_PROB_TYPE> > HMM::Backward(Observation o, Terminal& term) {
+vector<vector<HMM_PROB_TYPE> > HMM::Backward(Observation o) {
 	//returns B[i][j] probability of emmiting i-th symbol in state j and sequence after
 	vector<vector<HMM_PROB_TYPE> > B;
 	//B[i][j] probability of emmiting sequence (o.at(o.length()-i) to o.end() (+-1)) in state j
@@ -242,7 +254,7 @@ vector<vector<HMM_PROB_TYPE> > HMM::Backward(Observation o, Terminal& term) {
 	return B;
 }
 
-void HMM::Train(vector<Observation> observations, Terminal& term) {
+void HMM::Train(vector<Observation> observations) {
 	//TODO: Forward-backward/baum-welch training
 	vector<vector<HMM_PROB_TYPE> > e_trans_P(state_count,
 			vector<HMM_PROB_TYPE> (state_count, 0)); //[state_from][state_to] expected number of transitions from training data
@@ -276,11 +288,11 @@ void HMM::Train(vector<Observation> observations, Terminal& term) {
 		for (vector<Observation>::const_iterator j = observations.begin(); j
 				< observations.end(); j++) {
 #if VERBOSITY >3
-			Print(term);
+			Print();
 #endif
 			o = *j;
-			F = Forward(o, term);
-			B = Backward(o, term);
+			F = Forward(o);
+			B = Backward(o);
 
 #if VERBOSITY > 3
 			term.addLine("b4");
@@ -310,7 +322,7 @@ void HMM::Train(vector<Observation> observations, Terminal& term) {
 						sum += F[i][k] * trans_P[k][l] * emiss_P[l][o.at(i)]
 								* B[i + 1][l];
 					}
-					e_trans_P[k][l] += (sum / P);
+					e_trans_P[k][l] += (sum + r_trans / P);
 				}
 
 				//calculate e_emiss_P[k]
@@ -321,7 +333,7 @@ void HMM::Train(vector<Observation> observations, Terminal& term) {
 							sum += F[i][k] * B[i][k];
 						}
 					}
-					e_emiss_P[k][b] += (sum / P);
+					e_emiss_P[k][b] += (sum + r_emiss / P);
 				}
 			}
 #if VERBOSITY > 3
@@ -383,7 +395,7 @@ void HMM::Train(vector<Observation> observations, Terminal& term) {
 		for (vector<Observation>::const_iterator j = observations.begin(); j
 				< observations.end(); j++) {
 			o = *j;
-			F = Forward(o, term);
+			F = Forward(o);
 			P = 0;
 			for (int k = 0; k < state_count; k++) {
 				P += F[o.lenght() - 1][k] /** trans_P[k][0]*/;
@@ -397,7 +409,7 @@ void HMM::Train(vector<Observation> observations, Terminal& term) {
 #endif
 		}
 #if VERBOSITY > 3
-		Print(term);
+		Print();
 #endif
 		line.str("");
 		line << "before:" << before << " after:" << after << " delta:" << after
@@ -413,7 +425,7 @@ void HMM::Train(vector<Observation> observations, Terminal& term) {
 #endif
 
 #if VERBOSITY > 2
-	Print(term);
+	Print();
 	term.addLine("end");
 #endif
 }

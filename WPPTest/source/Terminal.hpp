@@ -29,8 +29,16 @@ public:
 	void clear(){ lines.clear();}
 	virtual void printAll() = 0;
 	virtual void addLine(string s) = 0;
+	virtual void addLine(string s,int verbosity) = 0;
 };
 
+class DummyTerminal: public Terminal{
+public:
+	DummyTerminal(){};
+	void printAll(){};
+	void addLine(string s){};
+	void addLine(string s,int verbosity){};
+};
 
 
 class STDTerminal: public Terminal {
@@ -39,6 +47,7 @@ public:
 	void clear();
 	void printAll();
 	void addLine(string s);
+	void addLine(string s,int verbosity);
 #ifdef FORWII
 private:
 	void *xfb;
@@ -57,6 +66,7 @@ private:
 public:
 	GRRTerminal(const u8* font_ttf, s32 font_ttf_size);
 	void addLine(string s);
+	void addLine(string s,int verbosity);
 	void printAll();
 };
 #endif

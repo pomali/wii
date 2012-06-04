@@ -37,7 +37,15 @@ void STDTerminal::addLine(string s) {
 	VIDEO_WaitVSync();
 #endif
 }
-;
+
+void STDTerminal::addLine(string s,int verbosity) {
+	lines.push_back(s);
+	printf("%s\n", s.c_str());
+#ifdef FORWII
+	VIDEO_WaitVSync();
+#endif
+}
+
 void STDTerminal::printAll() {
 	printf("\x1b[2J");
 	vector<string>::const_iterator cii;

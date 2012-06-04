@@ -26,6 +26,8 @@ int Observation::lenght() {
 }
 
 void Observation::putNew(O_TYPE value) {
+	if (value > O_SYMBOL_COUNT)
+		return;
 	_observ_hist.push_back(value);
 	_last = value;
 }

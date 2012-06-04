@@ -3,6 +3,9 @@
  *
  *  Created on: Feb 6, 2012
  *      Author: pom
+ *
+ *      Recorded observation
+ *
  */
 
 #ifndef OBSERVATION_HPP_
@@ -28,7 +31,7 @@ public:
 	string printOut();
 	int lenght();
 	O_TYPE at(int n);
-	//TODO: iterators
+
 	typedef vector<O_TYPE>::reverse_iterator reverse_iterator;
 	reverse_iterator rbegin() {
 		return _observ_hist.rbegin();
