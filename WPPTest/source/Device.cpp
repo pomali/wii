@@ -8,7 +8,6 @@
  */
 
 #include "Device.hpp"
-#include "Observation.hpp"
 
 void Device::get(){
 	readPending();

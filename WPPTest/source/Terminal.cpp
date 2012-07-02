@@ -39,11 +39,9 @@ void STDTerminal::addLine(string s) {
 }
 
 void STDTerminal::addLine(string s,int verbosity) {
-	lines.push_back(s);
-	printf("%s\n", s.c_str());
-#ifdef FORWII
-	VIDEO_WaitVSync();
-#endif
+	if (verbosity < VERBOSITY)
+		return;
+	addLine(s);
 }
 
 void STDTerminal::printAll() {
@@ -86,4 +84,11 @@ void GRRTerminal::addLine(string s) {
 	GRRLIB_PrintfTTF(_x, _y + (_size * 1.1) * _lastline++, _font, s.c_str(),
 			_size, _color);
 }
+
+void GRRTerminal::addLine(string s,int verbosity) {
+	if (verbosity < VERBOSITY)
+		return;
+	addLine(s);
+}
+
 #endif

@@ -29,7 +29,7 @@ public:
 	}
 	void putNew(O_TYPE value);
 	string printOut();
-	int lenght();
+	int length();
 	O_TYPE at(int n);
 
 	typedef vector<O_TYPE>::reverse_iterator reverse_iterator;
@@ -38,6 +38,13 @@ public:
 	}
 	reverse_iterator rend() {
 		return _observ_hist.rend();
+	}
+	reverse_iterator rend_window(){
+		return (_observ_hist.rbegin()-WINDOW_SIZE);
+	}
+
+	O_TYPE at_rit(reverse_iterator rit){
+		return (*rit);
 	}
 };
 

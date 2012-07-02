@@ -14,6 +14,7 @@
 #include "Observation.hpp"
 #include "Terminal.hpp"
 
+
 using namespace std;
 
 class HMM {
@@ -31,10 +32,14 @@ public:
 	HMM(Terminal &terminal);
 	void init();
 	HMM_PROB_TYPE Viterbi(Observation o); //FIXME: mozno by som mal prerobit na predavanie referencii
+	void Print(int verbosity);
 	void Print();
 	void Train(vector<Observation> observations);
 	vector<vector<HMM_PROB_TYPE> > Forward(Observation o);
 	vector<vector<HMM_PROB_TYPE> > Backward(Observation o);
+	HMM_PROB_TYPE ViterbiWindow(Observation o);
 };
+
+void printVV(vector<vector<HMM_PROB_TYPE> > V, Terminal & term);
 
 #endif /* HMM_HPP_ */

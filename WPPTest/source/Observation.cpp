@@ -21,7 +21,7 @@ string Observation::printOut() {
 	return output.str();
 }
 
-int Observation::lenght() {
+int Observation::length() {
 	return _observ_hist.size();
 }
 

@@ -99,7 +99,7 @@ HMM_PROB_TYPE HMM::Viterbi(Observation o) {
 	term.addLine(line.str());
 	term.addLine("o_at: dest_state");
 #endif
-	for (int observ_char = 0; observ_char < o.lenght(); observ_char++) {
+	for (int observ_char = 0; observ_char < o.length(); observ_char++) {
 		tmp_line.clear();
 		line.str("");
 		line << o.at(observ_char) << ":";
@@ -131,11 +131,69 @@ HMM_PROB_TYPE HMM::Viterbi(Observation o) {
 	previous_max = 0;
 	//	find probability of best path
 	for (int i = 0; i < state_count; i++) {
-		previous_max = max(previous_max, V[o.lenght()][i]);
+		previous_max = max(previous_max, V[o.length()][i]);
 
 	}
 
 	return previous_max;
+}
+
+HMM_PROB_TYPE HMM::ViterbiWindow(Observation o){// Same as Viterbi but only on last WINDOW_SIZE
+	vector<vector<HMM_PROB_TYPE> > V;			//V[i][j] probability of most probable path ending in state j at i-th symbol of Observation o
+	vector<HMM_PROB_TYPE> tmp_line;
+	HMM_PROB_TYPE previous_max;
+	ostringstream line;
+	line << fixed;
+
+	term.addLine("ViterbiWindow");
+	for (vector<HMM_PROB_TYPE>::const_iterator it = start_P.begin(); it
+			< start_P.end(); it++) {
+		tmp_line.push_back(*it);
+		line << " " << *it;
+	}
+	V.push_back(tmp_line);
+#if VERBOSITY > 2
+	term.addLine(line.str());
+	term.addLine("o_at: dest_state");
+#endif
+	for (int observ_char = max(0,o.length()-WINDOW_SIZE); observ_char < o.length(); observ_char++) {
+		tmp_line.clear();
+		line.str("");
+		line << o.at(observ_char) << ":";
+		for (int dest_state = 0; dest_state < state_count; dest_state++) {
+			previous_max = 0;
+#if VERBOSITY >2
+			line << "max(";
+#endif
+			for (int source_state = 0; source_state < state_count; source_state++) {
+				previous_max = max(previous_max, (V[observ_char][source_state] //observ_char bcs V[0] is 0 chars read
+						* trans_P[source_state][dest_state]
+						* emiss_P[dest_state][o.at(observ_char)])); // o.at(observ_char) bsc its char at position 0
+#if VERBOSITY >2
+				line << "," << V[observ_char][source_state] << "*"
+				<< trans_P[source_state][dest_state] << "*"
+				<< emiss_P[dest_state][o.at(observ_char)];
+#endif
+			}
+#if VERBOSITY >2
+			line << ")=";
+#endif
+			line << previous_max << " ";
+			tmp_line.push_back(previous_max);
+		}
+		V.push_back(tmp_line);
+		term.addLine(line.str());
+	}
+
+	previous_max = 0;
+	//	find probability of best path
+	for (int i = 0; i < state_count; i++) {
+		previous_max = max(previous_max, V[o.length()][i]);
+
+	}
+
+	return previous_max;
+
 }
 
 vector<vector<HMM_PROB_TYPE> > HMM::Forward(Observation o) {
@@ -160,7 +218,7 @@ vector<vector<HMM_PROB_TYPE> > HMM::Forward(Observation o) {
 	term.addLine("o_i:o_at states...");
 #endif
 
-	for (int observ_char = 0; observ_char < o.lenght(); observ_char++) {
+	for (int observ_char = 0; observ_char < o.length(); observ_char++) {
 		tmp_line.clear();
 		line.str("");
 		line << observ_char << ":";
@@ -304,7 +362,7 @@ void HMM::Train(vector<Observation> observations) {
 
 			P = 0;
 			for (int k = 0; k < state_count; k++) {
-				P += F[o.lenght() - 1][k] /** trans_P[k][0]*/;
+				P += F[o.length() - 1][k] /** trans_P[k][0]*/;
 			}
 
 			before += P;
@@ -318,7 +376,7 @@ void HMM::Train(vector<Observation> observations) {
 				//calculate e_trans_P[k]
 				for (int l = 0; l < state_count; l++) {
 					sum = 0;
-					for (int i = 0; i < o.lenght(); i++) {
+					for (int i = 0; i < o.length(); i++) {
 						sum += F[i][k] * trans_P[k][l] * emiss_P[l][o.at(i)]
 								* B[i + 1][l];
 					}
@@ -328,7 +386,7 @@ void HMM::Train(vector<Observation> observations) {
 				//calculate e_emiss_P[k]
 				for (int b = 0; b < O_SYMBOL_COUNT; b++) {//iterate through all symbols
 					sum = 0;
-					for (int i = 0; i < o.lenght(); i++) {
+					for (int i = 0; i < o.length(); i++) {
 						if (o.at(i) == b) {
 							sum += F[i][k] * B[i][k];
 						}
@@ -398,7 +456,7 @@ void HMM::Train(vector<Observation> observations) {
 			F = Forward(o);
 			P = 0;
 			for (int k = 0; k < state_count; k++) {
-				P += F[o.lenght() - 1][k] /** trans_P[k][0]*/;
+				P += F[o.length() - 1][k] /** trans_P[k][0]*/;
 			}
 			after += P;
 #if VERBOSITY > 3

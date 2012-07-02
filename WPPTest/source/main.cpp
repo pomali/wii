@@ -16,6 +16,7 @@
 
 #include "define.h"
 
+
 #ifdef FORWII
 #include <wiiuse/wpad.h>
 #include <grrlib.h>
@@ -29,6 +30,7 @@
 #include "Terminal.hpp"
 #include "Observation.hpp"
 #include "HMM.hpp"
+#include "WiimoteTest.h"
 
 using namespace std;
 
@@ -46,6 +48,7 @@ void printVV(vector<vector<HMM_PROB_TYPE> > V, Terminal & term) {
 	}
 }
 
+
 //------------------------
 
 
@@ -61,6 +64,9 @@ int main(int argc, char **argv) {
 	//	GRRLIB_SetBackgroundColour(0x00, 0x00, 0x00, 0xFF);
 	//	GRRLIB_Camera3dSettings(0.0f, 0.0f, 13.0f, 0, 1, 0, 0, 0, 0);
 	//	GRRTerminal gt(FreeMonoBold_ttf, FreeMonoBold_ttf_size);
+
+	WiimoteTest wmt;
+	wmt.main(argc,argv);
 
 	STDTerminal gt;
 
@@ -113,16 +119,18 @@ int main(int argc, char **argv) {
 	for (vector<Observation>::iterator it = o.begin(); it < o.end(); it++){
 		cout << (*it).printOut() << endl;
 	}
+
 	Observation o5;
 	int cislo;
 	cout << fixed;
 	while (1) {
 		cout << "Zadaj int <0," << O_SYMBOL_COUNT << ")" << endl;
 		cin >> dec >> cislo;
-		cout << cislo << endl;
+//		cout << cislo << endl;
 //		return 3;
 		o5.putNew(cislo);
-		cout << hmm1.Viterbi(o5) << endl;
+//		cout << hmm1.Viterbi(o5) << endl;
+		cout << hmm1.ViterbiWindow(o5) << endl;
 	}
 #endif
 
