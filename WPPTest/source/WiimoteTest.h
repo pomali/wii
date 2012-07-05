@@ -10,7 +10,8 @@
 
 #include <wiiuse.h>
 #include <unistd.h>
-#define MAX_WIIMOTES	4
+#include <math.h>
+#define MAX_WIIMOTES	1
 
 class WiimoteTest {
 public:
@@ -21,6 +22,8 @@ public:
 	void handle_read(struct wiimote_t* wm, byte* data, unsigned short len);
 	int main(int argc, char** argv);
 	WiimoteTest();
+	int get();
+	int quantize(byte x, byte y, byte z);
 
 private:
 	wiimote** wiimotes_pp;

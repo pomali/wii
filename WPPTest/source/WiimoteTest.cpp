@@ -241,19 +241,6 @@ int WiimoteTest::main(int argc, char** argv) {
 	found = this->wm_found;
 	connected = this->wm_connected;
 
-
-	/*
-	 *	Maybe I'm interested in the battery power of the 0th
-	 *	wiimote.  This should be WIIMOTE_ID_1 but to be sure
-	 *	you can get the wiimote assoicated with WIIMOTE_ID_1
-	 *	using the wiiuse_get_by_id() function.
-	 *
-	 *	A status request will return other things too, like
-	 *	if any expansions are plugged into the wiimote or
-	 *	what LEDs are lit.
-	 */
-	//wiiuse_status(wiimotes[0]);
-
 	/*
 	 *	This is the main loop
 	 *
@@ -370,6 +357,7 @@ WiimoteTest::WiimoteTest(){
 	if (!found) {
 		printf ("No wiimotes found.");
 //		return 0;
+		throw 1;
 	}
 
 	/*
@@ -387,6 +375,7 @@ WiimoteTest::WiimoteTest(){
 	else {
 		printf("Failed to connect to any wiimote.\n");
 //		return 0;
+		throw 2;
 	}
 
 	/*
@@ -394,25 +383,137 @@ WiimoteTest::WiimoteTest(){
 	 *	to tell which wiimotes are connected (just like the wii does).
 	 */
 	wiiuse_set_leds(wiimotes[0], WIIMOTE_LED_1);
-	wiiuse_set_leds(wiimotes[1], WIIMOTE_LED_2);
-	wiiuse_set_leds(wiimotes[2], WIIMOTE_LED_3);
-	wiiuse_set_leds(wiimotes[3], WIIMOTE_LED_4);
 	wiiuse_rumble(wiimotes[0], 1);
-	wiiuse_rumble(wiimotes[1], 1);
 
-	#ifndef WIN32
-		usleep(200000);
-	#else
-		Sleep(200);
-	#endif
+	usleep(200000);
 
 	wiiuse_rumble(wiimotes[0], 0);
-	wiiuse_rumble(wiimotes[1], 0);
 
 	this->wiimotes_pp = wiimotes;
 	this->wm_connected = connected;
 	this->wm_found = found;
 
 
+
+	/*
+	 *	Maybe I'm interested in the battery power of the 0th
+	 *	wiimote.  This should be WIIMOTE_ID_1 but to be sure
+	 *	you can get the wiimote assoicated with WIIMOTE_ID_1
+	 *	using the wiiuse_get_by_id() function.
+	 *
+	 *	A status request will return other things too, like
+	 *	if any expansions are plugged into the wiimote or
+	 *	what LEDs are lit.
+	 */
+	wiiuse_status(wiimotes[0]);
 }
+
+#define BARLEN 10
+void draw_xyz(byte x, byte y, byte z){
+	int i;
+	for (i=0;i<(x/255.00f)*BARLEN;i++)
+		printf(".");
+	printf("|");
+	for (;i<BARLEN;i++)
+		printf(".");
+	printf(" ");
+
+	for (i=0;i<(y/255.00f)*BARLEN;i++)
+		printf(".");
+	printf("|");
+	for (;i<BARLEN;i++)
+		printf(".");
+	printf(" ");
+
+	for (i=0;i<(z/255.00f)*BARLEN;i++)
+		printf(".");
+	printf("|");
+	for (;i<BARLEN;i++)
+		printf(".");
+	printf("\n");
+}
+
+
+void draw_xyz(float x, float y, float z){
+	int i;
+	for (i=0;i<(x+2)/4.00f*BARLEN;i++)
+		printf(".");
+	printf("|");
+	for (;i<BARLEN;i++)
+		printf(".");
+	printf(" ");
+
+	for (i=0;i<(y+2)/4.00f*BARLEN;i++)
+		printf(".");
+	printf("|");
+	for (;i<BARLEN;i++)
+		printf(".");
+	printf(" ");
+
+	for (i=0;i<(z+2)/4.00f*BARLEN;i++)
+		printf(".");
+	printf("|");
+	for (;i<BARLEN;i++)
+		printf(".");
+	printf("\n");
+}
+
+
+int WiimoteTest::get(){
+	if (!WIIUSE_USING_ACC(this->wiimotes_pp[0]))
+		wiiuse_motion_sensing(this->wiimotes_pp[0], 1);
+
+	if ( wiiuse_poll(this->wiimotes_pp, 1)){
+		if (this->wiimotes_pp[0]->event == WIIUSE_EVENT && (IS_PRESSED(this->wiimotes_pp[0], WIIMOTE_BUTTON_A))){/*
+			printf("cal_zero: %d %d %d",this->wiimotes_pp[0]->accel_calib.cal_zero.x,this->wiimotes_pp[0]->accel_calib.cal_zero.y,this->wiimotes_pp[0]->accel_calib.cal_zero.z);
+			draw_xyz(this->wiimotes_pp[0]->accel_calib.cal_zero.x,this->wiimotes_pp[0]->accel_calib.cal_zero.y,this->wiimotes_pp[0]->accel_calib.cal_zero.z);
+			printf("cal_g : %d %d %d\n",this->wiimotes_pp[0]->accel_calib.cal_g.x,this->wiimotes_pp[0]->accel_calib.cal_g.y,this->wiimotes_pp[0]->accel_calib.cal_g.z);
+			draw_xyz(this->wiimotes_pp[0]->accel_calib.cal_g.x,this->wiimotes_pp[0]->accel_calib.cal_g.y,this->wiimotes_pp[0]->accel_calib.cal_g.z);*/
+			printf("gforce: %f %f %f\n",this->wiimotes_pp[0]->gforce.x,this->wiimotes_pp[0]->gforce.y,this->wiimotes_pp[0]->gforce.y);
+			draw_xyz(this->wiimotes_pp[0]->gforce.x,this->wiimotes_pp[0]->gforce.y,this->wiimotes_pp[0]->gforce.y);
+			printf("accel: %d %d %d\n",this->wiimotes_pp[0]->accel.x,this->wiimotes_pp[0]->accel.y,this->wiimotes_pp[0]->accel.z);
+			draw_xyz(this->wiimotes_pp[0]->accel.x,this->wiimotes_pp[0]->accel.y,this->wiimotes_pp[0]->accel.z);
+			this->quantize(this->wiimotes_pp[0]->accel.x,this->wiimotes_pp[0]->accel.y,this->wiimotes_pp[0]->accel.z);
+
+			return 1;
+		}
+		else {
+			return -1;
+		}
+
+	}
+	else return -1;
+
+}
+
+
+int q0(byte x, byte y, byte z){
+	int sum = 0;
+	if (x>124) sum+=4;
+	if (y>124) sum+=2;
+	if (z>124) sum+=1;
+
+}
+
+int q(byte x, byte y, byte z){
+	int sum = 0;
+	if (((x-120)>0))
+	return (((x/85)*1) + ((y/85)*3) + ((z/124)*9));
+}
+
+int WiimoteTest::quantize(byte x, byte y, byte z){
+	/*
+	 *  Skusime najprv nieco simple
+	 */
+
+	float len = sqrt(x*x+y*y+z*z);
+	int sum = q(x,y,z);
+
+	if (len<150)
+		return -1;
+
+	printf("sum:%d  x:%f y:%f z:%f  len:%f\n",sum,x/len,y/len,z/len,len);
+	return sum;
+}
+
 

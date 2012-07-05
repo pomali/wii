@@ -34,7 +34,7 @@
 
 using namespace std;
 
-void printVV(vector<vector<HMM_PROB_TYPE> > V, Terminal & term) {
+void printxVV(vector<vector<HMM_PROB_TYPE> > V, Terminal & term) {
 	ostringstream line;
 	line << fixed;
 	for (vector<vector<HMM_PROB_TYPE> >::const_iterator i = V.begin(); i
@@ -54,7 +54,7 @@ void printVV(vector<vector<HMM_PROB_TYPE> > V, Terminal & term) {
 
 int restart = 0;
 
-int main(int argc, char **argv) {
+int oldmain(){
 	//	WPADData *wd;
 	//	WPAD_Init();
 	//	WPAD_SetDataFormat(0, WPAD_FMT_BTNS_ACC);
@@ -64,9 +64,13 @@ int main(int argc, char **argv) {
 	//	GRRLIB_SetBackgroundColour(0x00, 0x00, 0x00, 0xFF);
 	//	GRRLIB_Camera3dSettings(0.0f, 0.0f, 13.0f, 0, 1, 0, 0, 0, 0);
 	//	GRRTerminal gt(FreeMonoBold_ttf, FreeMonoBold_ttf_size);
-
+/*
+	printf("%d\n",(0.4<122/255.00f) );
 	WiimoteTest wmt;
-	wmt.main(argc,argv);
+	int x, maximum=500;
+	while(1){
+		x = wmt.get();
+	}*/
 
 	STDTerminal gt;
 
@@ -129,8 +133,9 @@ int main(int argc, char **argv) {
 //		cout << cislo << endl;
 //		return 3;
 		o5.putNew(cislo);
-//		cout << hmm1.Viterbi(o5) << endl;
-		cout << hmm1.ViterbiWindow(o5) << endl;
+		cout << hmm1.Viterbi(o5) << endl;
+		cout << hmm1.GetProb(o5) << endl;
+//		cout << hmm1.ViterbiWindow(o5) << endl;
 	}
 #endif
 
@@ -149,4 +154,8 @@ int main(int argc, char **argv) {
 	//	}
 
 	exit(0);
+}
+
+int main(int argc, char **argv){
+	return oldmain();
 }

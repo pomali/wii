@@ -36,8 +36,8 @@ HMM::HMM(Terminal &terminal) : term(terminal) {
 	for (int i = 0; i < state_count; i++) {
 		temp_e.clear();
 		for (int j = 0; j < state_count; j++) {
-			if (j >= i)
-				temp_e.push_back(1.0 / (state_count - i));
+			if ((i <= j) && (j<i+3))
+				temp_e.push_back(1.0 / 3); //(state_count - i));
 			else
 				temp_e.push_back(0.0);
 		}
@@ -86,7 +86,7 @@ HMM_PROB_TYPE HMM::Viterbi(Observation o) {
 	vector<HMM_PROB_TYPE> tmp_line;
 	HMM_PROB_TYPE previous_max;
 	ostringstream line;
-	line << fixed;
+	line << scientific;
 
 	term.addLine("Viterbi");
 	for (vector<HMM_PROB_TYPE>::const_iterator it = start_P.begin(); it
@@ -486,4 +486,14 @@ void HMM::Train(vector<Observation> observations) {
 	Print();
 	term.addLine("end");
 #endif
+}
+
+HMM_PROB_TYPE HMM::GetProb(Observation o){
+	HMM_PROB_TYPE out = 0.0;
+	vector<vector<HMM_PROB_TYPE> > forward = this->Forward(o);
+	//	add probabilities
+	for (uint i = 0; i < forward.size(); i++) { // for every state
+		out += forward[i][forward[i].size() - 1];
+	}
+	return out;
 }
