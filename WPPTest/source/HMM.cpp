@@ -4,6 +4,7 @@
  *  Created on: Feb 6, 2012
  *      Author: pom
  *
+ *	Chcem aby model vedel odpovedat na otazku "Ako velmi sa podoba pozorovanie na natrenovane gesta?"
  *
  *
  *
@@ -14,6 +15,10 @@
 /*
  * Initialize blank HMM
  *
+ * je to left-right model bez prechodov na sameho seba
+ * je moznost pridat specialny stav v ktorom musia vsetky koncit/ znak ktory musia na konci generovat
+ *
+ *
  *
  */
 HMM::HMM(Terminal &terminal) : term(terminal) {
@@ -22,6 +27,16 @@ HMM::HMM(Terminal &terminal) : term(terminal) {
 	const HMM_PROB_TYPE e_p = 1.0 / O_SYMBOL_COUNT;	//default probability of emmiting symbol in state
 	vector<HMM_PROB_TYPE> temp_e;
 
+
+	for (O_TYPE j = 0; j < O_SYMBOL_COUNT; j++)		//make temp_e into default vector of emission p.
+			temp_e.push_back(e_p);
+
+	for (int i = 0; i < state_count; i++) {		//fill emission p with
+		emiss_P.push_back(temp_e);
+	}
+
+
+/*
 	for (int i = 0; i < state_count; i++)
 			start_P.push_back(s_p);
 
@@ -36,13 +51,41 @@ HMM::HMM(Terminal &terminal) : term(terminal) {
 	for (int i = 0; i < state_count; i++) {
 		temp_e.clear();
 		for (int j = 0; j < state_count; j++) {
-			if ((i <= j) && (j<i+3))
-				temp_e.push_back(1.0 / 3); //(state_count - i));
+			if ((i < j) && (j<=i+2))
+				temp_e.push_back(1.0 / 2); //(state_count - i));
 			else
 				temp_e.push_back(0.0);
 		}
 		trans_P.push_back(temp_e);
 	}
+*/
+
+	//podla HMM v Wiigee
+
+	int jumplimit = 2;
+
+	start_P.push_back(1.0);
+	for (int i = 1; i < state_count; i++)
+			start_P.push_back(0.0);
+
+	for (int i = 0; i < state_count; i++) {
+		temp_e.clear();
+		for (int j = 0; j < state_count; j++) {
+			if(i==state_count-1 && j==state_count-1) { // last row
+				temp_e.push_back(1.0);
+			} else if(i==state_count-2 && j==state_count-2) { // next to last row
+				temp_e.push_back(0.5);
+			} else if(i==state_count-2 && j==state_count-1) { // next to last row
+				temp_e.push_back(0.5);
+			} else if(i<=j && i>j-jumplimit-1) {
+				temp_e.push_back(1.0/(jumplimit+1));
+			} else {
+				temp_e.push_back(0.0);
+			}
+		}
+		trans_P.push_back(temp_e);
+	}
+
 }
 
 //HMM::HMM(vector<Observation> observations) // construct HMM from observations
@@ -212,7 +255,7 @@ vector<vector<HMM_PROB_TYPE> > HMM::Forward(Observation o) {
 		tmp_line.push_back(*it);
 		line << *it << " ";
 	}
-	F.push_back(tmp_line);
+	F.push_back(tmp_line); //Pravdepodobnost ze som v emittol 0 symbolov v stave i F[0][i]
 #if VERBOSITY > 1
 	term.addLine(line.str());
 	term.addLine("o_i:o_at states...");
@@ -488,12 +531,20 @@ void HMM::Train(vector<Observation> observations) {
 #endif
 }
 
+/*
+ * Kedze pouzivam noobsky jedno HMM pre jedno gesto
+ *  riesim Problem 1 - pravdepodobnost ze HMM patri ku pozorovane gesto
+ *
+ *
+ *  Pravdepodobnost ze nastalo gesto na ktore sa pytam sa rovna
+ *  suctu pravdepodobnosti vsetkych moznych ciest ktore vygenerovali to gesto
+ */
 HMM_PROB_TYPE HMM::GetProb(Observation o){
 	HMM_PROB_TYPE out = 0.0;
 	vector<vector<HMM_PROB_TYPE> > forward = this->Forward(o);
 	//	add probabilities
 	for (uint i = 0; i < forward.size(); i++) { // for every state
-		out += forward[i][forward[i].size() - 1];
+		out += forward[o.length()][i];
 	}
 	return out;
 }
