@@ -39,6 +39,7 @@ public:
 	vector<vector<HMM_PROB_TYPE> > Backward(Observation o);
 	HMM_PROB_TYPE ViterbiWindow(Observation o);
 	HMM_PROB_TYPE GetProb(Observation o);
+	HMM_PROB_TYPE ViterbiLog(Observation o);
 };
 
 void printVV(vector<vector<HMM_PROB_TYPE> > V, Terminal & term);

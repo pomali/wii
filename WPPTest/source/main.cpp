@@ -32,6 +32,30 @@
 #include "HMM.hpp"
 #include "WiimoteTest.h"
 
+
+
+
+
+class SimpleSolution {
+
+private:
+	wiimote** wiimotes;
+	int found, connected;
+
+
+public:
+	int main();
+	int init();
+	RAW_DATA_TYPE get();
+	int train(HMM& hmm);
+	vector<O_TYPE> quantize(vector<RAW_DATA_TYPE> v);
+	Observation observe();
+
+
+};
+
+
+
 using namespace std;
 
 void printxVV(vector<vector<HMM_PROB_TYPE> > V, Terminal & term) {
@@ -133,8 +157,8 @@ int oldmain(){
 //		cout << cislo << endl;
 //		return 3;
 		o5.putNew(cislo);
-		cout << hmm1.Viterbi(o5) << endl;
-		cout << hmm1.GetProb(o5) << endl;
+		cout << "Viterbi: " << hmm1.Viterbi(o5) << endl;
+		cout << "GetProb: " << hmm1.GetProb(o5) << endl;
 //		cout << hmm1.ViterbiWindow(o5) << endl;
 	}
 #endif
@@ -157,5 +181,7 @@ int oldmain(){
 }
 
 int main(int argc, char **argv){
-	return oldmain();
+	SimpleSolution ss;
+	return ss.main();
+//	return oldmain();
 }

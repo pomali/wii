@@ -7,23 +7,36 @@
  *	Chcem aby model vedel odpovedat na otazku "Ako velmi sa podoba pozorovanie na natrenovane gesta?"
  *
  *
+ *	Neviem ci je sa ma brat emitovanie symbolu po prichode alebo po odchode zo stavu
+ *		(a teda ci to ze zacnem v nejakom stave vyemituje pismeno alebo nie)
+ *
+ *	problem je ze GetProb aj Viterbi davaju lepsie vysledky pre kratsie (najkratsie) gesta/kusy giest
+ *
  *
  */
 #include "define.h"
 #include "HMM.hpp"
+#include <cmath>
 
-/*
- * Initialize blank HMM
- *
- * je to left-right model bez prechodov na sameho seba
- * je moznost pridat specialny stav v ktorom musia vsetky koncit/ znak ktory musia na konci generovat
- *
- *
- *
- */
-HMM::HMM(Terminal &terminal) : term(terminal) {
+
+void printVV(vector<vector<HMM_PROB_TYPE> > V, Terminal & term) {
+	ostringstream line;
+	line << scientific;
+	for (vector<vector<HMM_PROB_TYPE> >::const_iterator i = V.begin(); i
+			< V.end(); i++) {
+		line.str("");
+		for (vector<HMM_PROB_TYPE>::const_iterator j = (*i).begin(); j
+				< (*i).end(); j++) {
+			line << *j << " ";
+		}
+		term.addLine(line.str());
+	}
+}
+
+
+void HMM::init(){
 	state_count = HMM_STATE_COUNT;
-	const HMM_PROB_TYPE s_p = 1.0 / state_count;	//default probability of being in state
+	//const HMM_PROB_TYPE s_p = 1.0 / state_count;	//default probability of being in state
 	const HMM_PROB_TYPE e_p = 1.0 / O_SYMBOL_COUNT;	//default probability of emmiting symbol in state
 	vector<HMM_PROB_TYPE> temp_e;
 
@@ -31,6 +44,7 @@ HMM::HMM(Terminal &terminal) : term(terminal) {
 	for (O_TYPE j = 0; j < O_SYMBOL_COUNT; j++)		//make temp_e into default vector of emission p.
 			temp_e.push_back(e_p);
 
+	emiss_P.clear();
 	for (int i = 0; i < state_count; i++) {		//fill emission p with
 		emiss_P.push_back(temp_e);
 	}
@@ -60,14 +74,25 @@ HMM::HMM(Terminal &terminal) : term(terminal) {
 	}
 */
 
-	//podla HMM v Wiigee
 
+
+	/* podla HMM v Wiigee
+	 *
+	 * (self-loop, next, jump next)
+	 * 	  _   _
+	 *  ^/ \^/ \^...
+	 *  O-->O-->...
+	 *
+	 */
+	/*
 	int jumplimit = 2;
 
+	start_P.clear();
 	start_P.push_back(1.0);
 	for (int i = 1; i < state_count; i++)
 			start_P.push_back(0.0);
 
+	trans_P.clear();
 	for (int i = 0; i < state_count; i++) {
 		temp_e.clear();
 		for (int j = 0; j < state_count; j++) {
@@ -85,6 +110,50 @@ HMM::HMM(Terminal &terminal) : term(terminal) {
 		}
 		trans_P.push_back(temp_e);
 	}
+	*/
+
+
+	int jumplimit = 1;
+
+		start_P.clear();
+		start_P.push_back(1.0);
+		for (int i = 1; i < state_count; i++)
+				start_P.push_back(0.0);
+
+		trans_P.clear();
+		for (int i = 0; i < state_count; i++) {
+			temp_e.clear();
+			for (int j = 0; j < state_count; j++) {
+				if(i==state_count-1 && j==state_count-1) { // last row
+					temp_e.push_back(1.0);
+				} else if(i==state_count-2 && j==state_count-2) { // next to last row
+					temp_e.push_back(0.5);
+				} else if(i==state_count-2 && j==state_count-1) { // next to last row
+					temp_e.push_back(0.5);
+				} else if(i<=j && i>j-jumplimit-1) {
+					temp_e.push_back(1.0/(jumplimit+1));
+				} else {
+					temp_e.push_back(0.0);
+				}
+			}
+			trans_P.push_back(temp_e);
+		}
+
+
+
+}
+
+/*
+ * Initialize blank HMM
+ *
+ * je to left-right model bez prechodov na sameho seba
+ * je moznost pridat specialny stav v ktorom musia vsetky koncit/ znak ktory musia na konci generovat
+ *
+ *
+ *
+ */
+HMM::HMM(Terminal &terminal) : term(terminal) {
+this->init();
 
 }
 
@@ -147,7 +216,7 @@ HMM_PROB_TYPE HMM::Viterbi(Observation o) {
 		line.str("");
 		line << o.at(observ_char) << ":";
 		for (int dest_state = 0; dest_state < state_count; dest_state++) {
-			previous_max = 0;
+			previous_max = -99999;
 #if VERBOSITY >2
 			line << "max(";
 #endif
@@ -171,7 +240,7 @@ HMM_PROB_TYPE HMM::Viterbi(Observation o) {
 		term.addLine(line.str());
 	}
 
-	previous_max = 0;
+	previous_max = -9999;
 	//	find probability of best path
 	for (int i = 0; i < state_count; i++) {
 		previous_max = max(previous_max, V[o.length()][i]);
@@ -179,6 +248,37 @@ HMM_PROB_TYPE HMM::Viterbi(Observation o) {
 	}
 
 	return previous_max;
+}
+
+
+HMM_PROB_TYPE HMM::ViterbiLog(Observation o) {
+	vector<vector<HMM_PROB_TYPE> > V;//V[i][j] probability of most probable path ending in state j at i-th symbol of Observation o
+	vector<HMM_PROB_TYPE> tmp_line;
+	HMM_PROB_TYPE previous_max;
+
+	for (vector<HMM_PROB_TYPE>::const_iterator it = start_P.begin(); it	< start_P.end(); it++)
+		tmp_line.push_back(log(*it));
+	V.push_back(tmp_line);
+
+	for (int observ_char = 0; observ_char < o.length(); observ_char++) {
+		tmp_line.clear();
+		for (int dest_state = 0; dest_state < state_count; dest_state++) {
+			previous_max = -99999;
+
+			for (int source_state = 0; source_state < state_count; source_state++)
+				//observ_char bcs V[0] is 0 chars read
+				previous_max = max(previous_max, (V[observ_char][source_state] + log(trans_P[source_state][dest_state])));
+
+			tmp_line.push_back(previous_max + log(emiss_P[dest_state][o.at(observ_char)]));
+		}
+		V.push_back(tmp_line);
+	}
+	previous_max = -9999;
+	//	find probability of best path
+	for (int i = 0; i < state_count; i++)
+		previous_max = max(previous_max, V[o.length()][i]);
+
+	return exp(previous_max);
 }
 
 HMM_PROB_TYPE HMM::ViterbiWindow(Observation o){// Same as Viterbi but only on last WINDOW_SIZE
@@ -239,6 +339,14 @@ HMM_PROB_TYPE HMM::ViterbiWindow(Observation o){// Same as Viterbi but only on l
 
 }
 
+/*
+ * Forward algorithm
+ *
+ * Returns: forward[Number_of_observed_symbols_from_o][State] = Probablity
+ *
+ * pricom forward[0][State] je pravdepodobnost ze zacneme v tom stave (teda start_P[State])
+ *
+ */
 vector<vector<HMM_PROB_TYPE> > HMM::Forward(Observation o) {
 	//returns F[i][j] probability of emmiting i-th symbol in state j and sequence before
 	vector<vector<HMM_PROB_TYPE> > F; //F[i][j]probability of being in state j and emitting i-th symbol from o
@@ -272,13 +380,14 @@ vector<vector<HMM_PROB_TYPE> > HMM::Forward(Observation o) {
 			line << "(";
 #endif
 			for (int source_state = 0; source_state < state_count; source_state++) {
-				sum += F[observ_char][source_state]
-						* trans_P[source_state][dest_state];
+				sum += F[observ_char][source_state]		//Predosla pravdepodobnost - pravdepodobnost ze emmitol uz observ_char znakov a je v stave source_state
+						* trans_P[source_state][dest_state];	//Pravdepodobnost ze prejde do dalsieho stavu
 #if VERBOSITY > 2
 				line << "+" << F[observ_char][source_state] << "*"
 				<< trans_P[source_state][dest_state];
 #endif
 			}
+			//Pravdepodobnost ze presiel z hociktoreho stavu do dest_state a pri tom emmitol znak umiestneny v o na pozicii observ_char;
 			tmp_line.push_back(sum * emiss_P[dest_state][o.at(observ_char)]); // o.at(observ_char) bsc its char at position 0
 
 #if VERBOSITY > 2
@@ -355,6 +464,11 @@ vector<vector<HMM_PROB_TYPE> > HMM::Backward(Observation o) {
 	return B;
 }
 
+
+/*
+ * Otazka je ci som tu nieco zle nenakodil lebo vysledky co dostavam su take ... nanic;
+*/
+
 void HMM::Train(vector<Observation> observations) {
 	//TODO: Forward-backward/baum-welch training
 	vector<vector<HMM_PROB_TYPE> > e_trans_P(state_count,
@@ -378,8 +492,8 @@ void HMM::Train(vector<Observation> observations) {
 	term.addLine("Training");
 #endif
 
-	while ((repetitions < 2) or (((after - before) > 0.001) and (repetitions
-			< 30))) {
+	while ((repetitions < 3) or (((after - before) > 0.00001) and (repetitions
+			< 80))) {
 #if VERBOSITY > 1
 		term.addLine("");
 #endif
@@ -542,9 +656,13 @@ void HMM::Train(vector<Observation> observations) {
 HMM_PROB_TYPE HMM::GetProb(Observation o){
 	HMM_PROB_TYPE out = 0.0;
 	vector<vector<HMM_PROB_TYPE> > forward = this->Forward(o);
+	int j;
+	printVV(forward,term);
+
 	//	add probabilities
 	for (uint i = 0; i < forward.size(); i++) { // for every state
-		out += forward[o.length()][i];
+		j=o.length();//for (j = 0; j < o.length(); j++)
+			out += log(forward[j][i]);
 	}
 	return out;
 }
