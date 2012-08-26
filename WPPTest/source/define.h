@@ -18,8 +18,8 @@
 #define HMM_PROB_TYPE long double
 #define HMM_STATE_COUNT 8
 #define VERBOSITY 0		//	cim vyssia tym viac povie
-#define r_trans 0e-220			//	pravdepodobnost ktora sa pripocitava pri trenovani
-#define r_emiss 0e-220			//	pravdepodobnost ktora sa pripocitava pri trenovani
+#define r_trans 0e+1		//	pravdepodobnost ktora sa pripocitava pri trenovani
+#define r_emiss 0e+1		//	pravdepodobnost ktora sa pripocitava pri trenovani
 #define WINDOW_SIZE 3			//	dlzka rozpoznavaneho gesta
 
 

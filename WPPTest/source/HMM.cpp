@@ -17,6 +17,7 @@
 #include "define.h"
 #include "HMM.hpp"
 #include <cmath>
+#include <boost/foreach.hpp>
 
 
 void printVV(vector<vector<HMM_PROB_TYPE> > V, Terminal & term) {
@@ -113,7 +114,7 @@ void HMM::init(){
 	*/
 
 
-	int jumplimit = 1;
+	int jumplimit = 2;
 
 		start_P.clear();
 		start_P.push_back(1.0);
@@ -347,7 +348,7 @@ HMM_PROB_TYPE HMM::ViterbiWindow(Observation o){// Same as Viterbi but only on l
  * pricom forward[0][State] je pravdepodobnost ze zacneme v tom stave (teda start_P[State])
  *
  */
-vector<vector<HMM_PROB_TYPE> > HMM::Forward(Observation o) {
+vector<vector<HMM_PROB_TYPE> > HMM::Forward0(Observation o) {
 	//returns F[i][j] probability of emmiting i-th symbol in state j and sequence before
 	vector<vector<HMM_PROB_TYPE> > F; //F[i][j]probability of being in state j and emitting i-th symbol from o
 	vector<HMM_PROB_TYPE> tmp_line;
@@ -406,7 +407,32 @@ vector<vector<HMM_PROB_TYPE> > HMM::Forward(Observation o) {
 	return F;
 }
 
-vector<vector<HMM_PROB_TYPE> > HMM::Backward(Observation o) {
+
+
+vector<vector<HMM_PROB_TYPE> > HMM::Forward(Observation o) {
+	//returns F[iTime][jState] probability of emmiting i-th symbol in state j and sequence before
+	vector<vector<HMM_PROB_TYPE> > f(o.length(),vector<HMM_PROB_TYPE>(state_count,0)); //F[i][j]probability of being in state j and emitting i-th symbol from o
+	vector<HMM_PROB_TYPE> tmp_line;
+
+
+	//fill f with starting probabilities
+	for (int l = 0; l< state_count; l++){
+		f[0][l] = (start_P[l] * emiss_P[l][o.at(0)]);
+	}
+	for (int i = 1; i < o.length(); i++){//symbol / time
+		for (uint k = 0; k < f[0].size();k++){//from state
+			HMM_PROB_TYPE sum = 0;
+			for (int j = 0; j < state_count; j++){ //to state
+				sum += f[i-1][j] * trans_P[j][k];
+			}
+			f[i][k] = sum * emiss_P[k][o[i]];
+		}
+	}
+	return f;
+}
+
+
+vector<vector<HMM_PROB_TYPE> > HMM::Backward0(Observation o) {
 	//returns B[i][j] probability of emmiting i-th symbol in state j and sequence after
 	vector<vector<HMM_PROB_TYPE> > B;
 	//B[i][j] probability of emmiting sequence (o.at(o.length()-i) to o.end() (+-1)) in state j
@@ -464,13 +490,31 @@ vector<vector<HMM_PROB_TYPE> > HMM::Backward(Observation o) {
 	return B;
 }
 
+vector<vector<HMM_PROB_TYPE> > HMM::Backward(Observation o){
+	//returns B[iTime][jState] probability of emmiting i-th symbol in state j and sequence after
+	const int T = (int)o.length(); //duration of gesture
+	vector<vector<HMM_PROB_TYPE> > b(T,vector<HMM_PROB_TYPE>(state_count, 0));
+
+	for (int i = 0; i < state_count; i++)
+		b[T-1][i] = 1;
+
+	for (int t = T-2; t >=0; t--){
+		for (int i = 0; i < state_count; i++){
+			b[t][i] = 0;
+			for (int j = 0; j < state_count; j++){
+				b[t][i] += (b[t+1][j] * trans_P[i][j] * emiss_P[j][o[t+1]]);
+			}
+		}
+	}
+	return b;
+}
+
 
 /*
  * Otazka je ci som tu nieco zle nenakodil lebo vysledky co dostavam su take ... nanic;
 */
 
-void HMM::Train(vector<Observation> observations) {
-	//TODO: Forward-backward/baum-welch training
+void HMM::Train0(vector<Observation> observations) {
 	vector<vector<HMM_PROB_TYPE> > e_trans_P(state_count,
 			vector<HMM_PROB_TYPE> (state_count, 0)); //[state_from][state_to] expected number of transitions from training data
 
@@ -645,6 +689,69 @@ void HMM::Train(vector<Observation> observations) {
 #endif
 }
 
+void HMM::Train(vector<Observation> observations){
+
+	vector<vector<HMM_PROB_TYPE> > a_new(this->trans_P.size(), vector<HMM_PROB_TYPE> (this->trans_P.at(0).size(), 0)); //trans_P[i][j] probability of moving from state i to state j
+	vector<vector<HMM_PROB_TYPE> > b_new(this->emiss_P.size(), vector<HMM_PROB_TYPE> (this->emiss_P.at(0).size(), 0)); //emiss_P[S][O] probability of emitting O in state S
+
+	for (uint i=0; i<a_new.size(); i++){
+		for (uint j=0; j<a_new[0].size();j++){
+			HMM_PROB_TYPE numerator=0;
+			HMM_PROB_TYPE denominator=0;
+
+			BOOST_FOREACH(Observation seq, observations){
+				vector<vector<HMM_PROB_TYPE> > fwd = this->Forward(seq);
+				vector<vector<HMM_PROB_TYPE> > bwd = this->Backward(seq);
+				HMM_PROB_TYPE prob = this->GetProb(seq) + 1e-200;
+
+				HMM_PROB_TYPE numer_innersum = 0;
+				HMM_PROB_TYPE denom_innersum = 0;
+
+				for (int t=0; t<seq.length()-1; t++){
+					numer_innersum += fwd[t][i]*trans_P[i][j]*emiss_P[j][seq.at(t+1)]*bwd[t+1][j];
+					denom_innersum += fwd[t][i]*bwd[t][i];
+				}
+				numerator   += (1/prob)*numer_innersum;
+				denominator += (1/prob)*denom_innersum;
+
+			}
+			a_new[i][j] = numerator/denominator;
+		}
+	}
+
+	for (uint i=0; i<b_new.size(); i++){
+		for (uint j=0; j<b_new[i].size(); j++){
+			HMM_PROB_TYPE numerator=0;
+			HMM_PROB_TYPE denominator=0;
+
+			BOOST_FOREACH(Observation seq, observations){
+				vector<vector<HMM_PROB_TYPE> > fwd = this->Forward(seq);
+				vector<vector<HMM_PROB_TYPE> > bwd = this->Backward(seq);
+				HMM_PROB_TYPE prob = this->GetProb(seq) + 1e-200;
+
+				HMM_PROB_TYPE numer_innersum = 0;
+				HMM_PROB_TYPE denom_innersum = 0;
+
+				for(int t=0;t<seq.length()-1; t++){
+					if(seq.at(t)==(int)j){
+						numer_innersum+=fwd[t][i]*bwd[t][i];
+					}
+					denom_innersum+=fwd[t][i]*bwd[t][i];
+				}
+				numerator 	+= 	(1/prob)*numer_innersum;
+				denominator	+=	(1/prob)*denom_innersum;
+			}
+
+			b_new[i][j] = numerator/denominator;
+		}
+	}
+
+	this->trans_P = a_new;
+	this->emiss_P = b_new;
+
+
+}
+
 /*
  * Kedze pouzivam noobsky jedno HMM pre jedno gesto
  *  riesim Problem 1 - pravdepodobnost ze HMM patri ku pozorovane gesto
@@ -656,13 +763,13 @@ void HMM::Train(vector<Observation> observations) {
 HMM_PROB_TYPE HMM::GetProb(Observation o){
 	HMM_PROB_TYPE out = 0.0;
 	vector<vector<HMM_PROB_TYPE> > forward = this->Forward(o);
-	int j;
-	printVV(forward,term);
+//	int j;
+//	printVV(forward,term);
 
 	//	add probabilities
-	for (uint i = 0; i < forward.size(); i++) { // for every state
-		j=o.length();//for (j = 0; j < o.length(); j++)
-			out += log(forward[j][i]);
+	for (uint i = 0; i < forward.at(0).size(); i++) { // for every state
+//		for (j = 0; j <= o.length(); j++)
+			out += forward[forward.size()-1][i];
 	}
 	return out;
 }

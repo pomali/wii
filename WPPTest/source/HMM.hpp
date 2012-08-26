@@ -35,8 +35,11 @@ public:
 	void Print(int verbosity);
 	void Print();
 	void Train(vector<Observation> observations);
+	void Train0(vector<Observation> observations);
 	vector<vector<HMM_PROB_TYPE> > Forward(Observation o);
+	vector<vector<HMM_PROB_TYPE> > Forward0(Observation o);
 	vector<vector<HMM_PROB_TYPE> > Backward(Observation o);
+	vector<vector<HMM_PROB_TYPE> > Backward0(Observation o);
 	HMM_PROB_TYPE ViterbiWindow(Observation o);
 	HMM_PROB_TYPE GetProb(Observation o);
 	HMM_PROB_TYPE ViterbiLog(Observation o);

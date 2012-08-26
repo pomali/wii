@@ -46,6 +46,10 @@ public:
 	O_TYPE at_rit(reverse_iterator rit){
 		return (*rit);
 	}
+
+	O_TYPE& operator[](const int n){
+		return _observ_hist.at(n);
+	}
 };
 
 
