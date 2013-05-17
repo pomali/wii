@@ -179,6 +179,8 @@ int oldmain(){
 	exit(0);
 }
 
+//LD_PRELOAD=/lib/libpthread.so.0 gdb --args ./app //toto by mohlo pomoct
+
 int main(int argc, char **argv){
 	SimpleSolution ss;
 	return ss.main();
