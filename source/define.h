@@ -16,7 +16,8 @@
 #define O_TYPE int
 #define O_SYMBOL_COUNT 14		//	kolko znakov ma abeceda pohybu (do ktorej premieta quantizer)
 #define HMM_PROB_TYPE long double
-#define HMM_STATE_COUNT 20
+#define HMM_GESTURE_STATE_COUNT 6
+#define HMM_NOISE_STATE_COUNT 6
 #define VERBOSITY 0		//	cim vyssia tym viac povie
 #define r_trans 0e+1		//	pravdepodobnost ktora sa pripocitava pri trenovani
 #define r_emiss 0e+1		//	pravdepodobnost ktora sa pripocitava pri trenovani
