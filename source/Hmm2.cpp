@@ -45,7 +45,8 @@ bool Hmm2::init(){
     e(2,5) = (double) 1/2;
 
     a.clear();
-    a(0,1) = 1;
+    a(0,1) = 0.5;
+    a(0,2) = 0.5;
     a(1,1) = 0.85;
     a(1,2) = 0.05;
     a(2,1) = 0.1;
@@ -73,6 +74,7 @@ int Hmm2::test(){
 
     this->Viterbi(seq);
     this->Forward(seq);
+    this->Backward(seq);
 
     std::cout<<"papa"<<std::endl;
 
@@ -83,8 +85,13 @@ int Hmm2::test(){
 matrix<double> Hmm2::Viterbi(std::vector<int> sequence){
  matrix<double> v = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
  matrix<double> ptr = matrix<double>(sequence.size()+1, state_total_count);
- v.clear();
- v(START_STATE,0) = log10(1);
+ for(unsigned i =0; i<v.size1(); i++){
+	 for(unsigned j=0; j<v.size2();j++){
+		 v(i,j) = -INFINITY;
+	 }
+ }
+
+ v(START_STATE,0) = log(1);
 
  for(unsigned i=0; i<sequence.size(); i++){
 
@@ -95,7 +102,7 @@ matrix<double> Hmm2::Viterbi(std::vector<int> sequence){
 		 matrix_column< matrix<double> > c_a = column(a, l);
 		 double max = -INFINITY;
 		 for (int k=0; k<state_total_count;k++){
-			 double val = c_v(k) + log10(c_a(k));
+			 double val = c_v(k) + log(c_a(k));
 			 if (val>max){
 				 max = val;
 				 argmax = k;
@@ -103,7 +110,7 @@ matrix<double> Hmm2::Viterbi(std::vector<int> sequence){
 		 }
 		 //END max+argmax
 
-		 v(l,i+1) = log10(e(l,sequence.at(i))) + max;
+		 v(l,i+1) = log(e(l,sequence.at(i))) + max;
 		 ptr(i+1,l) = argmax;
 	 }
  }
@@ -116,7 +123,7 @@ matrix<double> Hmm2::Viterbi(std::vector<int> sequence){
  double path_prob = -INFINITY;
  unsigned last_state = 0;
  for (int k=0; k<state_total_count;k++){
-		 double val = c_v(k)+log10(c_a(k));
+		 double val = c_v(k)+log(c_a(k));
 		 if (val>path_prob){
 			 path_prob = val;
 			 last_state = k;
@@ -135,7 +142,7 @@ matrix<double> Hmm2::Viterbi(std::vector<int> sequence){
  }
 
 //std::cout<<"v:"<< v << std::endl;
-//std::cout<<"path_prob:"<< path_prob <<std::endl;
+std::cout<<"path_prob:"<< exp(path_prob)<<std::endl;
 //std::cout<<"path:"<< path << std::endl;
 std::cout<<"path_labels:"<< path_labels << std::endl;
 //std::cout<<"ptr:"<< ptr << std::endl;
@@ -147,32 +154,145 @@ std::cout<<"path_labels:"<< path_labels << std::endl;
 
 boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 	matrix<double> f = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
-	 matrix<double> ptr = matrix<double>(sequence.size()+1, state_total_count);
-	 f.clear();
-	 f(START_STATE,0) = 1;
+	 for(unsigned i =0; i<f.size1(); i++){
+		 for(unsigned j=0; j<f.size2();j++){
+			 f(i,j) = -INFINITY;
+		 }
+	 }
+	 f(START_STATE,0) = log(1);
 
 	 for(unsigned i=0; i<sequence.size(); i++){
 
-		 for(int l=0; l<state_total_count; l++){
+		 for(int l=1; l<state_total_count; l++){
 			 matrix_column< matrix<double> > c_f = column(f, i);
 			 matrix_column< matrix<double> > c_a = column(a, l);
-			 double sum = inner_prod(c_f, c_a); //to iste ako sum
+			 vector<double> sum_a(state_total_count);
+			 sum_a.clear();
+			 //BEGIN max+argmax+pre_sum
+			 double max = -INFINITY;
+			 int argmax;
+			 for (int k=0; k<state_total_count;k++){
+				 double val = (c_f(k)) + log(c_a(k)); //LOG
+				 if (val>max){
+					 max = val;
+					 argmax = k;
+				 }
+				 sum_a(k) = val;
+			 }
 
-			 f(l,i+1) = e(l, sequence.at(i)) * sum;
+			 //END max+argmax+pre_sum
+			 double sum = 0;
+			 for (int k=0; k<state_total_count; k++){
+				 double val =sum_a(k) - max; //shiftneme vsetky body tak aby max bol na nule
+				 if (val==val) //ak NIEJE pravda ze val == +-NAN ak robim rozdiel dvoch -nekonecien tak to zahodim, preco? netusim, aby to nerobilo bordel, ale v principe su to dve nuly v nelog priestore
+					 sum += exp(val);
+			 }
+			 sum = log(sum) +max; // +max
+
+
+
+			 f(l,i+1) = log(e(l, sequence.at(i))) + sum;
 		 }
 	 }
 
-	 double prob = inner_prod( column(f, sequence.size()), row(a, 0));
+	 matrix_column< matrix<double> > c_f = column(f, sequence.size());
+	 matrix_row< matrix<double> > r_a = row(a, 0);
+	 vector<double> sum_a(state_total_count);
+	 sum_a.clear();
+	 //BEGIN max+argmax+pre_sum
+	 double max = -INFINITY;
+	 int argmax;
+	 for (int k=0; k<state_total_count;k++){
+		 double val = c_f(k) + log(r_a(k));
+		 if (val>max){
+			 max = val;
+			 argmax = k;
+		 }
+		 sum_a(k) = val;
+	 }
+	 //END max+argmax+pre_sum
+	 double sum = 0;
+	 for (int k=0; k<state_total_count; k++){
+			 sum += exp( sum_a(k)-max ); //shiftneme vsetky body tak aby max bol na nule
+	 }
+
+	 double prob = exp(max + log(sum));
 
 	 std::cout<<"prob:"<<prob<<std::endl;
 	 std::cout<<"f:"<<f<<std::endl;
 
-
-
 	 return f;
 }
-boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 
+
+boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
+/*
+ * Initialization
+ */
+	matrix<double> b = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
+	 for(unsigned k =0; k<b.size1(); k++){
+		 for(unsigned j=0; j<b.size2();j++){
+			 if (j==sequence.size()){
+				b(k,j) = log(a(k,end_state));
+			 }
+			 else
+				 b(k,j) = -INFINITY;
+		 }
+	 }
+
+
+	 std::cout<<"b:"<<b<<std::endl;
+/*
+ * Recursion
+ */
+
+	 for(unsigned i=sequence.size(); i>0; i--){
+		 for(int k=0; k<state_total_count; k++){
+			 double max_val=-INFINITY;
+			 vector<double> sum_a(state_total_count);
+			 for(int l=0; l<state_total_count; l++){
+				 double val= log(a(k,l)) + log(e(l,sequence.at(i-1))) + b(l,i);
+				 if(val>max_val)
+					 max_val = val;
+				 sum_a(l) = val;
+			 }
+
+			 double sum=0;
+			 for(int l=0; l<state_total_count; l++){
+				 double val = (sum_a(k) - max_val);
+				 if (val==val)
+					 sum+=exp(val);
+			 }
+			 sum = log(sum) + max_val;
+
+			 b(k,i-1) = sum;
+		 }
+	 }
+/*
+ * Termination
+ */
+
+	 vector<double> sum_a(state_total_count);
+	 double max_val=-INFINITY;
+	 for(int l=0;l<state_total_count;l++){
+		 double val = log(a(0,l)) + log(e(l, sequence.at(0))) + b(l, 1);
+		 if(val>max_val)
+			 max_val=val;
+		 sum_a(l)=val;
+	 }
+
+	 double sum=0;
+	 for(int l=0;l<state_total_count;l++){
+		 double val = sum_a(l) - max_val;
+		 sum += exp(val);
+	 }
+	 sum = max_val + log(sum);
+	 double prob = exp(sum);
+
+	 std::cout<<"b_prob:"<<prob<<std::endl;
+	 std::cout<<"b:"<<b<<std::endl;
+
+	 return b;
 }
 
 
