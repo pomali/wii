@@ -16,19 +16,6 @@
  */
 
 
-/*      /->N1->N2->..........Nn\->
- * Start <-----------------------  End
- * 		\->G1->G2->.........Gn/->
- *
- * Gi maju otocku na seba
- * Ni sa mozu vratit kedykolvek na zaciatok
- *
- * Otazka ci chceme pouzit Viterbi training alebo Baum-Welch training
- *
- *
- *
- */
-
 #include "HMM.hpp"
 
 void printVV(vector<vector<HMM_PROB_TYPE> > V, Terminal & term) {
@@ -49,7 +36,10 @@ void printVV(vector<vector<HMM_PROB_TYPE> > V, Terminal & term) {
 }
 
 void HMM::init(){
-	state_count = HMM_GESTURE_STATE_COUNT+HMM_NOISE_STATE_COUNT+2; //cast pre noise, cast pre gesto, start, koniec
+	gesture_state_count =  HMM_GESTURE_STATE_COUNT;
+	noise_state_count = HMM_NOISE_STATE_COUNT;
+	state_count =gesture_state_count+noise_state_count+2; //cast pre noise, cast pre gesto, start, koniec
+
 	//const HMM_PROB_TYPE s_p = 1.0 / state_count;	//default probability of being in state
 	const HMM_PROB_TYPE e_p = 1.0 / O_SYMBOL_COUNT;	//default probability of emmiting symbol in state
 	vector<HMM_PROB_TYPE> temp_e;

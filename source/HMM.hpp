@@ -14,6 +14,7 @@
 #include <cmath>
 #include <sys/types.h>
 #include <algorithm>
+#include <boost/numeric/ublas/matrix.hpp>
 
 
 using namespace std;
@@ -26,6 +27,8 @@ public:
 	//TODO: prerobit trans_P na map
 	vector<vector<HMM_PROB_TYPE> > emiss_P; //emiss_P[S][O] probability of emitting O in state S
 	int state_count;
+	int noise_state_count;
+	int gesture_state_count;
 	Terminal &term;
 
 public:

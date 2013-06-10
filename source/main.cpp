@@ -31,7 +31,7 @@
 #include "Observation.hpp"
 #include "HMM.hpp"
 #include "WiimoteTest.h"
-
+#include "Hmm2.h"
 
 
 
@@ -182,7 +182,9 @@ int oldmain(){
 //LD_PRELOAD=/lib/libpthread.so.0 gdb --args ./app //toto by mohlo pomoct
 
 int main(int argc, char **argv){
-	SimpleSolution ss;
-	return ss.main();
+	//SimpleSolution ss;
+	//return ss.main();
+	Hmm2 h;
+	return h.test();
 //	return oldmain();
 }
