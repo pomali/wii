@@ -39,6 +39,7 @@ public:
 	boost::numeric::ublas::matrix<double> ForwardLabeled(std::vector<int> sequence,std::vector<int> labels);
 	boost::numeric::ublas::matrix<double> BackwardLabeled(std::vector<int> sequence,std::vector<int> labels);
 	boost::numeric::ublas::matrix<double> P_pi_k_x(std::vector<int> sequence);
+	boost::numeric::ublas::matrix<double> P_pi_k_x2(std::vector<int> sequence);
 	double PosterioriDecoding(std::vector<int> sequence);
 	void BaumWelchTraining();
 	bool get_state_label(int state);

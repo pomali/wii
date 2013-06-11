@@ -258,8 +258,8 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 		 sum = elogsum(sum, elogproduct(f(k,sequence.size()), elog(a(k,end_state))));
 	 }
 	 posterior_probability=sum;
-	 std::cout<<"prob:"<<exp(sum)<<std::endl;
-	 std::cout<<"f:"<<f<<std::endl;
+//	 std::cout<<"prob:"<<exp(sum)<<std::endl;
+//	 std::cout<<"f:"<<f<<std::endl;
 
 	 return f;
 }
@@ -309,8 +309,8 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 	 }
 
 	 posterior_probability=sum;
-	 std::cout<<"b_prob:"<<exp(sum)<<std::endl;
-	 std::cout<<"b:"<<b<<std::endl;
+//	 std::cout<<"b_prob:"<<exp(sum)<<std::endl;
+//	 std::cout<<"b:"<<b<<std::endl;
 
 	 return b;
 }
@@ -324,18 +324,33 @@ matrix<double> Hmm2::P_pi_k_x(std::vector<int> sequence){
 			p(k,i)= elogdiv( elogproduct(f(k,i), b(k,i)), posterior_probability);
 		}
 	}
-
 	std::cout<<"p:"<<p<<std::endl;
-
 	return p;
-
 }
 
+matrix<double> Hmm2::P_pi_k_x2(std::vector<int> sequence){
+	matrix<double> f = this->Forward(sequence);
+	matrix<double> b = this->Backward(sequence);
+	matrix<double> p(state_total_count, sequence.size());
+	for(unsigned i=0;i<sequence.size();i++){
+		double normalizer = -INFINITY;
+		for(int k=0;k<state_total_count;k++){
+			p(k,i)= elogproduct(f(k,i), b(k,i));
+			normalizer = elogsum(normalizer, p(k,i));
+		}
+		for(int k=0;k<state_total_count;k++){
+			p(k,i)= elogproduct( p(k,i), -normalizer);
+		}
+	}
+	std::cout<<"p2:"<<p<<std::endl;
+	return p;
+}
 
 
 
 double Hmm2::PosterioriDecoding(std::vector<int> sequence){
 	matrix<double> p = this->P_pi_k_x(sequence);
+	matrix<double> p2 = this->P_pi_k_x2(sequence);
 
 	vector<int> path(sequence.size());
 	vector<double> g(sequence.size()); //pravdepodobnosti ze znak vypusteny v case i bol zo stavu v geste
@@ -352,7 +367,7 @@ double Hmm2::PosterioriDecoding(std::vector<int> sequence){
 				max_k=k;
 			}
 		}
-		path(i)=this->max_k;
+		path(i)=max_k;
 		/*
 		 * Druha moznost zistit derived property v nasom pripade kategoriu (gesto-negesto)
 		 *
@@ -393,7 +408,7 @@ double Hmm2::g(int state){
 
 boost::numeric::ublas::matrix<double> Hmm2::ForwardLabeled(std::vector<int> sequence,std::vector<int> labels){
 	if (sequence.size()!=labels.size())
-		raise(99);
+		throw 99;
 
 	matrix<double> f = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
 	/*
@@ -437,7 +452,7 @@ boost::numeric::ublas::matrix<double> Hmm2::ForwardLabeled(std::vector<int> sequ
 
 boost::numeric::ublas::matrix<double> Hmm2::BackwardLabeled(std::vector<int> sequence,std::vector<int> labels){
 	if (sequence.size()!=labels.size())
-			raise(99);
+			throw 99;
 /*
  * Initialization
  */
