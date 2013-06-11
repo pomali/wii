@@ -48,6 +48,7 @@ public:
 	void BaumWelchTrainingBioStep(std::vector<int> sequence);
 	bool get_state_label(int state);
 	double g(int state);
+	bool issilent(int state);
 
 	/*
 	 * vsetko v logaritmickom priestore

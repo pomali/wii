@@ -32,6 +32,7 @@
 #include "HMM.hpp"
 #include "WiimoteTest.h"
 #include "Hmm2.h"
+#include "Wii2.h"
 
 
 
@@ -186,5 +187,7 @@ int main(int argc, char **argv){
 	//return ss.main();
 	Hmm2 h;
 	return h.test();
+//	Wii2 w;
+//	return w.main();
 //	return oldmain();
 }
