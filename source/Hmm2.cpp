@@ -25,11 +25,41 @@ Hmm2::~Hmm2() {
 /*
  * log sum exp trick ... input: log_a ( a v log priestore) log_b (b v log priestore) ; returns log(a+b) = log(a) + log(1 + exp(log(b)-log(a)))
  */
-double lse(double log_a, double log_b){
-	if (log_a>log_b)
-		return log_a + log1p(exp(log_b-log_a));
+
+double eexp(double x){
+	if (x==-INFINITY)
+		return 0;
 	else
-		return log_b + log1p(exp(log_a-log_b));
+		return exp(x);
+}
+
+double elog(double x){
+	if (x==0)
+		return -INFINITY;
+	else if (x>0)
+		return log(x);
+	else
+		throw 20;
+}
+
+double elnsum(double log_a, double log_b){
+	if (log_a==-INFINITY)
+		return log_b;
+	else if(log_b==-INFINITY)
+		return log_a;
+	else{
+		if (log_a>log_b)
+				return log_a + log1p(eexp(log_b-log_a));
+			else
+				return log_b + log1p(eexp(log_a-log_b));
+	}
+}
+
+double elnproduct(double log_a, double log_b){
+	if (log_a ==-INFINITY or log_b==-INFINITY)
+		return -INFINITY;
+	else
+		return log_a+log_b;
 }
 
 
@@ -91,9 +121,10 @@ int Hmm2::test(){
 
     double a = 3;
     double b = 0.012;
-    std::cout<< log(a) << " " << log(b) <<" "<<log(a+b)<<" "<< lse(log(a),log(b)) << std::endl;
+    std::cout<< log(a) << " " << log(b) <<" "<<log(a+b)<<" "<< elnsum(log(a),log(b)) << std::endl;
 
-    std::cout<<"papa"<<std::endl;
+//    bool tre = ;
+    std::cout<<"papa "<<(log(0)==-INFINITY)<<std::endl;
 
     return 0;
 }
@@ -171,12 +202,15 @@ std::cout<<"path_labels:"<< path_labels << std::endl;
 
 boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 	matrix<double> f = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
+	/*
+	 * Initialization - pravdepodobnost ze zacnem (prejdem zo Start do ineho) stavu
+	 */
 	 for(unsigned i =0; i<f.size1(); i++){
 		 for(unsigned j=0; j<f.size2();j++){
 			 f(i,j) = -INFINITY;
 		 }
 	 }
-	 f(START_STATE,0) = log(1);
+	 f(START_STATE,0) = elog(1);
 	/*
 	 *Recursion
 	 */
