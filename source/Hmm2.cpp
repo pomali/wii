@@ -119,12 +119,11 @@ int Hmm2::test(){
     this->Forward(seq);
     this->Backward(seq);
 
-    double a = 3;
-    double b = 0.012;
-    std::cout<< log(a) << " " << log(b) <<" "<<log(a+b)<<" "<< elogsum(log(a),log(b)) << std::endl;
+//    double a = 3;
+//    double b = 0.012;
+//    std::cout<< log(a) << " " << log(b) <<" "<<log(a+b)<<" "<< elogsum(log(a),log(b)) << std::endl;
 
-//    bool tre = ;
-    std::cout<<"papa "<<(log(0)==-INFINITY)<<std::endl;
+    std::cout<<"zbohom"<<std::endl;
 
     return 0;
 }
@@ -246,66 +245,45 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
  * Initialization
  */
 	matrix<double> b = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
-	 for(unsigned k =0; k<b.size1(); k++){
-		 for(unsigned j=0; j<b.size2();j++){
-			 if (j==sequence.size()){
-				b(k,j) = log(a(k,end_state));
-			 }
-			 else
-				 b(k,j) = -INFINITY;
-		 }
+	 for(unsigned k =0; k<b.size1(); k++){//stavy
+				b(k,sequence.size()) = elog(a(k,end_state));
 	 }
 
 /*
  * Recursion
  */
 
-	 for(unsigned i=sequence.size(); i>0; i--){
-		 for(int k=0; k<state_total_count; k++){
-			 double max_val=-INFINITY;
-			 vector<double> sum_a(state_total_count);
-			 sum_a.clear();
+	 for(unsigned i=sequence.size(); i>0; i--){ //Observation time
+		 for(int k=0; k<state_total_count; k++){ //FROM state
+			 double logbeta=-INFINITY;
 			 for(int l=0; l<state_total_count; l++){
-				 double val= log(a(k,l)) + log(e(l,sequence.at(i-1))) + b(l,i);
-				 if(val>max_val)
-					 max_val = val;
-				 sum_a(l) = val;
+				 logbeta = elogsum(logbeta,
+									elogproduct(elog(a(k,l)),
+												elogproduct(e(l, sequence.at(i-1)),
+															b(l,i)
+															)
+												)
+									);
 			 }
-
-			 double sum=0;
-			 for(int l=0; l<state_total_count; l++){
-				 double val = (sum_a(k) - max_val);
-				 if (val==val)
-					 sum+=exp(val);
-			 }
-			 sum = log(sum) + max_val;
-
-			 b(k,i-1) = sum;
+			 b(k,i-1) = logbeta;
 		 }
 	 }
 /*
  * Termination
  */
 
-	 vector<double> sum_a(state_total_count);
-	 sum_a.clear();
-	 double max_val=-INFINITY;
+	 double sum=-INFINITY;
 	 for(int l=0;l<state_total_count;l++){
-		 double val = log(a(0,l)) + log(e(l, sequence.at(0))) + b(l, 0);
-		 if(val>max_val)
-			 max_val=val;
-		 sum_a(l)=val;
+		 sum = elogsum(sum,
+					   elogproduct(elog(a(0,l)),
+								   elogproduct(elog(e(l, sequence.at(0))),
+											   b(l,1)
+											  )
+								   )
+						);
 	 }
 
-	 double sum=0;
-	 for(int l=0;l<state_total_count;l++){
-		 double val = sum_a(l) - max_val;
-		 sum += exp(val);
-	 }
-	 sum = max_val + log(sum);
-	 double prob = exp(sum);
-
-	 std::cout<<"b_prob:"<<prob<<std::endl;
+	 std::cout<<"b_prob:"<<exp(sum)<<std::endl;
 	 std::cout<<"b:"<<b<<std::endl;
 
 	 return b;
