@@ -44,8 +44,8 @@ double elog(double x){
 }
 
 double elogsum(double log_a, double log_b){
-	if(log_a>0 or log_b>0)
-			std::cout<<"sum log_a: "<<log_a<<" log_b: "<<log_b<<std::endl;
+//	if(log_a>0 or log_b>0)
+//			std::cout<<"sum log_a: "<<log_a<<" log_b: "<<log_b<<std::endl;
 	if (log_a==-INFINITY)
 		return log_b;
 	else if(log_b==-INFINITY)
@@ -59,8 +59,8 @@ double elogsum(double log_a, double log_b){
 }
 
 double elogproduct(double log_a, double log_b){
-	if(log_a>0 or log_b>0)
-		std::cout<<"prod log_a: "<<log_a<<" log_b: "<<log_b<<std::endl;
+//	if(log_a>0 or log_b>0)
+//		std::cout<<"prod log_a: "<<log_a<<" log_b: "<<log_b<<std::endl;
 	if (log_a ==-INFINITY or log_b==-INFINITY)
 		return -INFINITY;
 	else
@@ -85,9 +85,13 @@ bool Hmm2::init(){
 	s.insert(START_STATE); //0 je zaciatocny stav ktory je silent
 	s.insert(end_state); //posledny stav je silent
 
+	this->init_unknown_casino();
 
+	return true;
+}
+
+void Hmm2::init_known_casino(){
 	//occasionally dishonest casino example
-
     e.clear();
     for(unsigned i=0; i<e.size1();i++){
     	if(this->get_state_label(i)){
@@ -113,10 +117,41 @@ bool Hmm2::init(){
 
     a(1,end_state) = 0.1;
     a(2,end_state) = 0.1;
-
-
-	return true;
 }
+
+
+void Hmm2::init_unknown_casino(){
+	//occasionally dishonest casino example
+    e.clear();
+    for(unsigned i=0; i<e.size1();i++){
+		for (unsigned j = 0; j < e.size2(); ++ j){
+			if(s.find(i)==s.end()) //ak sa i nenachadza v silent state
+				e(i, j) = ((double)1/symbols_count);
+			else
+				e(i,j) = 0;
+		}
+    }
+
+    for (unsigned i=0; i<a.size1();i++){
+    	for(unsigned j=0;j<a.size2();j++){
+    		if(i==(unsigned)end_state )
+    			a(i,j)=0;
+    		else if (i==START_STATE){
+				if (j==(unsigned)end_state || j==START_STATE)
+					a(i,j)=0;
+				else
+					a(i,j)=((double) 1/(state_total_count-2));
+    		}
+    		else if (j==START_STATE)
+    			a(i,j)=0;
+    		else if (j==(unsigned)end_state)
+    			a(i,j)=((double) 1/(state_total_count-1));
+    		else
+    		    a(i,j)=((double) 1/(state_total_count-1));
+    	}
+    }
+}
+
 
 int Hmm2::test(){
 	using namespace boost::numeric::ublas;
@@ -137,17 +172,21 @@ int Hmm2::test(){
     }
 
 
-    this->Viterbi(seq);
+//    this->Viterbi(seq);
 //    this->Forward(seq);
 //    this->Backward(seq);
-    this->PosterioriDecoding(seq);
+//    this->PosterioriDecoding(seq);
+    std::cout<<"a:"<<a<<std::endl;
+    std::cout<<"e:"<<e<<std::endl;
+    this->BaumWelchTrainingBioStep(seq);
+    this->Forward(seq);
 
 //    double a = 3;
 //    double b = 0.012;
 //    std::cout<< log(a) << " " << log(b) <<" "<<log(a+b)<<" "<< elogsum(log(a),log(b)) << std::endl;
 
-//    std::cout<<"a:"<<a<<std::endl;
-//    std::cout<<"e:"<<e<<std::endl;
+    std::cout<<"a:"<<a<<std::endl;
+    std::cout<<"e:"<<e<<std::endl;
     std::cout<<"zbohom"<<std::endl;
     return 0;
 }
@@ -258,7 +297,7 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 		 sum = elogsum(sum, elogproduct(f(k,sequence.size()), elog(a(k,end_state))));
 	 }
 	 posterior_probability=sum;
-//	 std::cout<<"prob:"<<exp(sum)<<std::endl;
+	 std::cout<<"prob:"<<exp(sum)<<std::endl;
 //	 std::cout<<"f:"<<f<<std::endl;
 
 	 return f;
@@ -501,5 +540,109 @@ boost::numeric::ublas::matrix<double> Hmm2::BackwardLabeled(std::vector<int> seq
 	 std::cout<<"b:"<<b<<std::endl;
 	 return b;
 }
+
+
+void Hmm2::BaumWelchTraining(std::vector<int> sequence){
+/*
+	matrix<double> es(sequence.size(),state_total_count, state_total_count);
+	for(unsigned t=0; t<sequence.size(); t++){
+		double normalizer = -INFINITY;
+		for (int i=0; i<state_total_count; i++){
+			for(int j=0;  j<state_total_count; j++){
+				es(t, i,j) = elogproduct(	f(i,t),
+										elogproduct(elog(a(i,j)),
+													elogproduct(b(i,t+1),
+																elog(e(j, sequence.at(t+1)))
+																)
+													)
+									);
+				normalizer = elogsum(normalizer, es(t, i,j));
+			}
+		}
+		for (int i=0;i<state_total_count; i++){
+			for(int j=0; j<state_total_count; j++){
+				es(t, i, j) = elogproduct(es(t,i,j), -normalizer);
+			}
+		}
+
+	}
+
+*/
+
+}
+
+
+void Hmm2::BaumWelchTrainingBio(std::vector<int> sequence){
+
+
+
+}
+void Hmm2::BaumWelchTrainingBioStep(std::vector<int> sequence){
+	matrix<double> f = this->Forward(sequence);
+	matrix<double> b = this->Backward(sequence);
+	matrix<double> a_count(state_total_count, state_total_count); //pocet pouziti daneho spojenia
+	matrix<double> e_count(state_total_count, symbols_count) ;
+	vector<double> a_sum_count(state_total_count);
+	vector<double> e_sum_count(state_total_count);
+
+	/*
+	 * Hladame (odhadujeme) pocet pouziti spojeni medzi vrcholmi
+	 */
+	for(unsigned k =0; k<(unsigned)state_total_count;k++){
+		for(unsigned l=0; l<(unsigned)state_total_count;l++){
+			double sum = -INFINITY;
+			for(unsigned i=0;i<sequence.size(); i++){
+				sum = elogsum(sum, elogproduct(f(k,i+1),
+						elogproduct(elog(a(k,l)),
+							elogproduct(elog(e(l,sequence.at(i))), //i+1
+									b(l,i+1)
+								)
+							)
+						  )
+						);
+			}
+			a_count(k,l) = (elogdiv(sum, posterior_probability));
+			a_sum_count(k) = elogsum(a_sum_count(k), a_count(k,l));
+		}
+	}
+	/*
+	 * Hladame (odhadujeme) pocet emisii stavov
+	 */
+
+	for(unsigned k =0; k<(unsigned)state_total_count;k++){
+		for(int bi=0;bi<symbols_count;bi++){
+			double sum = -INFINITY;
+			for(unsigned i=0;i<sequence.size();i++){
+				if (sequence.at(i)==bi){
+					sum=elogsum(sum, elogproduct(f(k,i+1),b(k,i+1)) );
+				}
+			}
+			e_count(k,bi)=(elogdiv(sum,posterior_probability));
+			a_sum_count(k) = elogsum(e_sum_count(k), e_count(k,bi));
+		}
+	}
+
+	std::cout<<"acount:"<<a_count<<std::endl;
+	std::cout<<"ecount:"<<e_count<<std::endl;
+	std::cout<<"a_sum_count:"<<a_sum_count<<std::endl;
+	std::cout<<"e_sum_count:"<<e_sum_count<<std::endl;
+
+	/*
+	 * Zmenit model ... toto by sa malo diat iba raz za iteraciu, predosle by malo pre kazdu sekvenciu
+	 */
+	for(unsigned k =0; k<(unsigned)state_total_count;k++){
+		for(unsigned l=0; l<(unsigned)state_total_count;l++){
+			a(k,l)= eexp(elogdiv(a_count(k,l), a_sum_count(k)));
+		}
+	}
+
+	for(unsigned k =0; k<(unsigned)state_total_count;k++){
+		for(int bi=0;bi<symbols_count;bi++){
+			e(k,bi) = eexp(elogdiv(e_count(k,bi), e_sum_count(k)));
+		}
+	}
+
+}
+
 
 

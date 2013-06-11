@@ -32,6 +32,8 @@ public:
 
 	Hmm2();
 	bool init();
+	void init_known_casino();
+	void init_unknown_casino();
 	int test();
 	boost::numeric::ublas::matrix<double> Viterbi(std::vector<int> sequence);
 	boost::numeric::ublas::matrix<double> Forward(std::vector<int> sequence);
@@ -41,7 +43,9 @@ public:
 	boost::numeric::ublas::matrix<double> P_pi_k_x(std::vector<int> sequence);
 	boost::numeric::ublas::matrix<double> P_pi_k_x2(std::vector<int> sequence);
 	double PosterioriDecoding(std::vector<int> sequence);
-	void BaumWelchTraining();
+	void BaumWelchTraining(std::vector<int> sequence);
+	void BaumWelchTrainingBio(std::vector<int> sequence);
+	void BaumWelchTrainingBioStep(std::vector<int> sequence);
 	bool get_state_label(int state);
 	double g(int state);
 
