@@ -26,11 +26,11 @@ Hmm2::~Hmm2() {
  * log sum exp trick ... input: log_a ( a v log priestore) log_b (b v log priestore) ; returns log(a+b) = log(a) + log(1 + exp(log(b)-log(a)))
  */
 
-double eexp(double x){
-	if (x==-INFINITY)
+double eexp(double log_x){
+	if (log_x==-INFINITY)
 		return 0;
 	else
-		return exp(x);
+		return exp(log_x);
 }
 
 double elog(double x){
@@ -43,6 +43,8 @@ double elog(double x){
 }
 
 double elogsum(double log_a, double log_b){
+	if(log_a>0 or log_b>0)
+			std::cout<<"sum log_a: "<<log_a<<" log_b: "<<log_b<<std::endl;
 	if (log_a==-INFINITY)
 		return log_b;
 	else if(log_b==-INFINITY)
@@ -56,6 +58,8 @@ double elogsum(double log_a, double log_b){
 }
 
 double elogproduct(double log_a, double log_b){
+	if(log_a>0 or log_b>0)
+		std::cout<<"prod log_a: "<<log_a<<" log_b: "<<log_b<<std::endl;
 	if (log_a ==-INFINITY or log_b==-INFINITY)
 		return -INFINITY;
 	else
@@ -80,7 +84,7 @@ bool Hmm2::init(){
     e.clear();
 	unsigned j;
     for (j = 0; j < e.size2(); ++ j){
-            e(1, j) = (double)1/6;
+            e(1, j) = ((double)1/symbols_count)-0.0001;
     }
     for (j = 0; j < e.size2(); ++ j){
                 e(2, j) = (double)1/10;
@@ -123,6 +127,9 @@ int Hmm2::test(){
 //    double b = 0.012;
 //    std::cout<< log(a) << " " << log(b) <<" "<<log(a+b)<<" "<< elogsum(log(a),log(b)) << std::endl;
 
+    std::cout<<"a:"<<a<<std::endl;
+    std::cout<<"e:"<<e<<std::endl;
+    std::cout<<"e:"<<e<<std::endl;
     std::cout<<"zbohom"<<std::endl;
 
     return 0;
@@ -256,10 +263,10 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 	 for(unsigned i=sequence.size(); i>0; i--){ //Observation time
 		 for(int k=0; k<state_total_count; k++){ //FROM state
 			 double logbeta=-INFINITY;
-			 for(int l=0; l<state_total_count; l++){
+			 for(int l=0; l<state_total_count; l++){//To state
 				 logbeta = elogsum(logbeta,
 									elogproduct(elog(a(k,l)),
-												elogproduct(e(l, sequence.at(i-1)),
+												elogproduct(elog(e(l, sequence.at(i-1))),
 															b(l,i)
 															)
 												)
