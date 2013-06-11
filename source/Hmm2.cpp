@@ -21,6 +21,19 @@ Hmm2::Hmm2() {
 Hmm2::~Hmm2() {
 }
 
+
+/*
+ * log sum exp trick ... input: log_a ( a v log priestore) log_b (b v log priestore) ; returns log(a+b) = log(a) + log(1 + exp(log(b)-log(a)))
+ */
+double lse(double log_a, double log_b){
+	if (log_a>log_b)
+		return log_a + log1p(exp(log_b-log_a));
+	else
+		return log_b + log1p(exp(log_a-log_b));
+}
+
+
+
 bool Hmm2::init(){
 	using namespace boost::numeric::ublas;
 	// matrix (rows, cols)
@@ -75,6 +88,10 @@ int Hmm2::test(){
     this->Viterbi(seq);
     this->Forward(seq);
     this->Backward(seq);
+
+    double a = 3;
+    double b = 0.012;
+    std::cout<< log(a) << " " << log(b) <<" "<<log(a+b)<<" "<< lse(log(a),log(b)) << std::endl;
 
     std::cout<<"papa"<<std::endl;
 
@@ -160,6 +177,9 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 		 }
 	 }
 	 f(START_STATE,0) = log(1);
+	/*
+	 *Recursion
+	 */
 
 	 for(unsigned i=0; i<sequence.size(); i++){
 		 for(int l=1; l<state_total_count; l++){
@@ -185,7 +205,9 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 			 f(l,i+1) = log(e(l, sequence.at(i))) + sum;
 		 }
 	 }
-
+/*
+ * Termination
+ */
 
 	 //BEGIN sum(k)(f(k,L) * a(k,0))
 	 vector<double> sum_a(state_total_count);
@@ -290,11 +312,4 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 
 bool Hmm2::is_in_gesture(int state){
 	return ( 0 < state and  state < state_gesture_count+1);
-}
-
-/*
- * log sum exp trick ... input: a b ; returns log(a+b) = log(a) + log(1 + exp(log(b)-a))
- */
-double lse(double a, double b){
-
 }
