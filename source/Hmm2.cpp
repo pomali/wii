@@ -14,6 +14,7 @@ Hmm2::Hmm2() {
 	state_noise_count = 1;
 	state_total_count = state_noise_count+state_gesture_count+2;
 	symbols_count = 6;
+	posterior_probability=0;
 
 	this->init();
 }
@@ -66,6 +67,12 @@ double elogproduct(double log_a, double log_b){
 		return log_a+log_b;
 }
 
+double elogdiv(double log_a, double log_b){
+	if (log_a ==-INFINITY or log_b==-INFINITY)
+		return -INFINITY;
+	return log_a-log_b;
+}
+
 
 
 bool Hmm2::init(){
@@ -82,12 +89,17 @@ bool Hmm2::init(){
 	//occasionally dishonest casino example
 
     e.clear();
-	unsigned j;
-    for (j = 0; j < e.size2(); ++ j){
-            e(1, j) = ((double)1/symbols_count)-0.0001;
-    }
-    for (j = 0; j < e.size2(); ++ j){
-                e(2, j) = (double)1/10;
+    for(unsigned i=0; i<e.size1();i++){
+    	if(this->is_in_gesture(i)){
+			for (unsigned j = 0; j < e.size2(); ++ j){
+					e(i, j) = ((double)1/symbols_count)-0.0001;
+			}
+    	}
+    	else if(i!=(unsigned)START_STATE and i!=(unsigned)end_state){
+			for (unsigned j = 0; j < e.size2(); ++ j){
+						e(i, j) = (double)1/10;
+			}
+    	}
     }
     e(2,5) = (double) 1/2;
 
@@ -102,6 +114,7 @@ bool Hmm2::init(){
     a(1,end_state) = 0.1;
     a(2,end_state) = 0.1;
 
+
 	return true;
 }
 
@@ -109,29 +122,30 @@ int Hmm2::test(){
 	using namespace boost::numeric::ublas;
 
     this->init();
-    int pv[60] = {2, 2, 2, 5, 5, 5, 4, 4, 1, 6, 6, 6, 5, 6, 6, 5, 6, 3, 5, 6, 4, 3, 2, 4, 3, 6, 4, 1, 3, 1, 5, 1, 3, 4, 6, 5, 1, 4, 6, 3, 5, 3, 4, 1, 1, 1, 2, 6, 4, 1, 4, 6, 2, 6, 2, 5, 3, 3, 5, 6};
-    //{6, 5, 1, 1, 6, 6, 4, 5, 3, 1, 3, 2, 6, 5, 1, 2, 4, 5, 6, 3, 6, 6, 6, 4, 6, 3, 1, 6, 3, 6, 6, 6, 3, 1, 6, 2, 3, 2, 6, 4, 5, 5, 2, 3, 6, 2, 6, 6, 6, 6, 6, 6, 2, 5, 1, 5, 1, 6, 3, 1};
-    //{3,1,5,1,1,6,2,4,6,4,4,6,6,4,4,2,4,5,3,1,1,3,2,1,6,3,1,1,6,4,1,5,2,1,3,3,6,2,5,1,4,4,5,4,3,6,3,1,6,5,6,6,2,6,5,6,6,6,6,6};
+    int pv1[60] ={3,1,5,1,1,6,2,4,6,4,4,6,6,4,4,2,4,5,3,1,1,3,2,1,6,3,1,1,6,4,1,5,2,1,3,3,6,2,5,1,4,4,5,4,3,6,3,1,6,5,6,6,2,6,5,6,6,6,6,6};
+    int pv2[60] ={6, 5, 1, 1, 6, 6, 4, 5, 3, 1, 3, 2, 6, 5, 1, 2, 4, 5, 6, 3, 6, 6, 6, 4, 6, 3, 1, 6, 3, 6, 6, 6, 3, 1, 6, 2, 3, 2, 6, 4, 5, 5, 2, 3, 6, 2, 6, 6, 6, 6, 6, 6, 2, 5, 1, 5, 1, 6, 3, 1};
+    int pv3[60] = {2, 2, 2, 5, 5, 5, 4, 4, 1, 6, 6, 6, 5, 6, 6, 5, 6, 3, 5, 6, 4, 3, 2, 4, 3, 6, 4, 1, 3, 1, 5, 1, 3, 4, 6, 5, 1, 4, 6, 3, 5, 3, 4, 1, 1, 1, 2, 6, 4, 1, 4, 6, 2, 6, 2, 5, 3, 3, 5, 6};
+
+
 
     std::vector<int> seq;
     for (unsigned i=0; i<60; i++){
-    	seq.push_back(pv[i]-1);
+    	seq.push_back(pv3[i]-1); //kocky su cislovane od 1 po 6, stavy od 0 po 5
     }
 
 
     this->Viterbi(seq);
-    this->Forward(seq);
-    this->Backward(seq);
+//    this->Forward(seq);
+//    this->Backward(seq);
+    this->PosterioriDecoding(seq);
 
 //    double a = 3;
 //    double b = 0.012;
 //    std::cout<< log(a) << " " << log(b) <<" "<<log(a+b)<<" "<< elogsum(log(a),log(b)) << std::endl;
 
-    std::cout<<"a:"<<a<<std::endl;
-    std::cout<<"e:"<<e<<std::endl;
-    std::cout<<"e:"<<e<<std::endl;
+//    std::cout<<"a:"<<a<<std::endl;
+//    std::cout<<"e:"<<e<<std::endl;
     std::cout<<"zbohom"<<std::endl;
-
     return 0;
 }
 
@@ -240,6 +254,7 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 	 for (int k=0; k<state_total_count; k++){
 		 sum = elogsum(sum, elogproduct(f(k,sequence.size()), elog(a(k,end_state))));
 	 }
+	 posterior_probability=sum;
 	 std::cout<<"prob:"<<exp(sum)<<std::endl;
 	 std::cout<<"f:"<<f<<std::endl;
 
@@ -290,13 +305,88 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 						);
 	 }
 
+	 posterior_probability=sum;
 	 std::cout<<"b_prob:"<<exp(sum)<<std::endl;
 	 std::cout<<"b:"<<b<<std::endl;
 
 	 return b;
 }
 
+matrix<double> Hmm2::P_pi_k_x(std::vector<int> sequence){
+	matrix<double> f = this->Forward(sequence);
+	matrix<double> b = this->Backward(sequence);
+	matrix<double> p(state_total_count, sequence.size());
+	for(unsigned i=0;i<sequence.size();i++){
+		for(int k=0;k<state_total_count;k++){
+			p(k,i)= elogdiv( elogproduct(f(k,i), b(k,i)), posterior_probability);
+		}
+	}
+
+	std::cout<<"p:"<<p<<std::endl;
+
+	return p;
+
+}
+
+
+
+
+double Hmm2::PosterioriDecoding(std::vector<int> sequence){
+	matrix<double> p = this->P_pi_k_x(sequence);
+
+	vector<int> path(sequence.size());
+	vector<double> g(sequence.size());
+//	g.clear();
+	for (unsigned i=0; i<sequence.size();i++){
+		/*
+		 * Prva moznost - zistit path (nemusi vsak naozaj existovat)
+		 */
+		double max=-INFINITY;
+		int max_k=0;
+		for(int k=0; k<state_total_count;k++){
+			double val=p(k,i);
+			if(max<val){
+				max=val;
+				max_k=k;
+			}
+		}
+		path(i)=max_k;
+		/*
+		 * Druha moznost zistit derived property v nasom pripade kategoriu (gesto-negesto)
+		 *
+		 */
+		double sum=-INFINITY;
+		for(int k=0; k<state_total_count;k++){
+			sum = elogsum(sum, elogproduct(elog(this->g(k)),
+											p(k,i)
+										)
+						);
+		}
+		g(i)=sum;
+	}
+
+
+	std::cout<<"path:"<<path<<std::endl;
+	std::cout<<"g:"<<g<<std::endl;
+	for (unsigned i=0; i<sequence.size();i++){
+		g(i)=eexp(g(i));
+	}
+	std::cout<<"g:"<<g<<std::endl;
+	std::cout<<"pp:"<<posterior_probability<<std::endl;
+
+	return posterior_probability;
+}
+
+
+
 
 bool Hmm2::is_in_gesture(int state){
 	return ( 0 < state and  state < state_gesture_count+1);
+}
+
+double Hmm2::g(int state){
+	if(this->is_in_gesture(state))
+		return 1;
+	else
+		return 0;
 }

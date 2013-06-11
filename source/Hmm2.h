@@ -28,7 +28,7 @@ public:
 
 	int state_gesture_count, state_noise_count, state_total_count, symbols_count;
 	int end_state;
-
+	double posterior_probability;
 
 	Hmm2();
 	bool init();
@@ -36,21 +36,21 @@ public:
 	boost::numeric::ublas::matrix<double> Viterbi(std::vector<int> sequence);
 	boost::numeric::ublas::matrix<double> Forward(std::vector<int> sequence);
 	boost::numeric::ublas::matrix<double> Backward(std::vector<int> sequence);
+	boost::numeric::ublas::matrix<double> P_pi_k_x(std::vector<int> sequence);
+	double PosterioriDecoding(std::vector<int> sequence);
 	bool is_in_gesture(int state);
+	double g(int state);
 
 	/*
 	 * vsetko v logaritmickom priestore
 	 *
-	 * Viterbi
-	 * Forward
-	 * Backward
-	 * ForwardBackward
+	 * ForwardBackward (?)
 	 *
 	 * Baum-Welch training
 	 *
 	 * Viterbi training
 	 *
-	 *
+	 * pridat (biol seq p64) a_r(k,l) e_r(k,b) = pseudocounts ktore sa pripocitavaju pri trenovani
 	 *
 	 */
 
