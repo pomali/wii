@@ -162,60 +162,52 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 	 f(START_STATE,0) = log(1);
 
 	 for(unsigned i=0; i<sequence.size(); i++){
-
 		 for(int l=1; l<state_total_count; l++){
-			 matrix_column< matrix<double> > c_f = column(f, i);
-			 matrix_column< matrix<double> > c_a = column(a, l);
+			 //BEGIN max+argmax+pre_sum
 			 vector<double> sum_a(state_total_count);
 			 sum_a.clear();
-			 //BEGIN max+argmax+pre_sum
-			 double max = -INFINITY;
-			 int argmax;
+			 double max_val = -INFINITY;
 			 for (int k=0; k<state_total_count;k++){
-				 double val = (c_f(k)) + log(c_a(k)); //LOG
-				 if (val>max){
-					 max = val;
-					 argmax = k;
-				 }
+				 double val = f(k,i) + log(a(k,l)); //LOG
+				 if (val>max_val)
+					 max_val = val;
 				 sum_a(k) = val;
 			 }
-
 			 //END max+argmax+pre_sum
 			 double sum = 0;
 			 for (int k=0; k<state_total_count; k++){
-				 double val =sum_a(k) - max; //shiftneme vsetky body tak aby max bol na nule
+				 double val = sum_a(k) - max_val; //shiftneme vsetky body tak aby max bol na nule
+				 std::cout<<val<<std::endl;
 				 if (val==val) //ak NIEJE pravda ze val == +-NAN ak robim rozdiel dvoch -nekonecien tak to zahodim, preco? netusim, aby to nerobilo bordel, ale v principe su to dve nuly v nelog priestore
 					 sum += exp(val);
 			 }
-			 sum = log(sum) +max; // +max
-
-
-
+			 sum = log(sum) +max_val; // +max_val
 			 f(l,i+1) = log(e(l, sequence.at(i))) + sum;
 		 }
 	 }
 
-	 matrix_column< matrix<double> > c_f = column(f, sequence.size());
-	 matrix_row< matrix<double> > r_a = row(a, 0);
+
+	 //BEGIN sum(k)(f(k,L) * a(k,0))
 	 vector<double> sum_a(state_total_count);
 	 sum_a.clear();
-	 //BEGIN max+argmax+pre_sum
 	 double max = -INFINITY;
-	 int argmax;
+	 unsigned L = sequence.size();
 	 for (int k=0; k<state_total_count;k++){
-		 double val = c_f(k) + log(r_a(k));
+		 double val = f(k,L) + log(a(k,0));
 		 if (val>max){
 			 max = val;
-			 argmax = k;
 		 }
 		 sum_a(k) = val;
 	 }
-	 //END max+argmax+pre_sum
+
 	 double sum = 0;
 	 for (int k=0; k<state_total_count; k++){
-			 sum += exp( sum_a(k)-max ); //shiftneme vsetky body tak aby max bol na nule
+		 double val = sum_a(k)-max;
+		 std::cout<<val<<std::endl;
+		 //if(val==val)
+			 sum += exp( val); //shiftneme vsetky body tak aby max bol na nule
 	 }
-
+	 //END sum(k)(f(k,L) * a(k,0))
 	 double prob = exp(max + log(sum));
 
 	 std::cout<<"prob:"<<prob<<std::endl;
@@ -240,8 +232,6 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 		 }
 	 }
 
-
-	 std::cout<<"b:"<<b<<std::endl;
 /*
  * Recursion
  */
@@ -250,6 +240,7 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 		 for(int k=0; k<state_total_count; k++){
 			 double max_val=-INFINITY;
 			 vector<double> sum_a(state_total_count);
+			 sum_a.clear();
 			 for(int l=0; l<state_total_count; l++){
 				 double val= log(a(k,l)) + log(e(l,sequence.at(i-1))) + b(l,i);
 				 if(val>max_val)
@@ -273,9 +264,10 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
  */
 
 	 vector<double> sum_a(state_total_count);
+	 sum_a.clear();
 	 double max_val=-INFINITY;
 	 for(int l=0;l<state_total_count;l++){
-		 double val = log(a(0,l)) + log(e(l, sequence.at(0))) + b(l, 1);
+		 double val = log(a(0,l)) + log(e(l, sequence.at(0))) + b(l, 0);
 		 if(val>max_val)
 			 max_val=val;
 		 sum_a(l)=val;
@@ -298,4 +290,11 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 
 bool Hmm2::is_in_gesture(int state){
 	return ( 0 < state and  state < state_gesture_count+1);
+}
+
+/*
+ * log sum exp trick ... input: a b ; returns log(a+b) = log(a) + log(1 + exp(log(b)-a))
+ */
+double lse(double a, double b){
+
 }
