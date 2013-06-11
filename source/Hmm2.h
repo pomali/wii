@@ -36,9 +36,12 @@ public:
 	boost::numeric::ublas::matrix<double> Viterbi(std::vector<int> sequence);
 	boost::numeric::ublas::matrix<double> Forward(std::vector<int> sequence);
 	boost::numeric::ublas::matrix<double> Backward(std::vector<int> sequence);
+	boost::numeric::ublas::matrix<double> ForwardLabeled(std::vector<int> sequence,std::vector<int> labels);
+	boost::numeric::ublas::matrix<double> BackwardLabeled(std::vector<int> sequence,std::vector<int> labels);
 	boost::numeric::ublas::matrix<double> P_pi_k_x(std::vector<int> sequence);
 	double PosterioriDecoding(std::vector<int> sequence);
-	bool is_in_gesture(int state);
+	void BaumWelchTraining();
+	bool get_state_label(int state);
 	double g(int state);
 
 	/*

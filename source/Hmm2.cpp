@@ -90,7 +90,7 @@ bool Hmm2::init(){
 
     e.clear();
     for(unsigned i=0; i<e.size1();i++){
-    	if(this->is_in_gesture(i)){
+    	if(this->get_state_label(i)){
 			for (unsigned j = 0; j < e.size2(); ++ j){
 					e(i, j) = ((double)1/symbols_count)-0.0001;
 			}
@@ -122,11 +122,14 @@ int Hmm2::test(){
 	using namespace boost::numeric::ublas;
 
     this->init();
-    int pv1[60] ={3,1,5,1,1,6,2,4,6,4,4,6,6,4,4,2,4,5,3,1,1,3,2,1,6,3,1,1,6,4,1,5,2,1,3,3,6,2,5,1,4,4,5,4,3,6,3,1,6,5,6,6,2,6,5,6,6,6,6,6};
-    int pv2[60] ={6, 5, 1, 1, 6, 6, 4, 5, 3, 1, 3, 2, 6, 5, 1, 2, 4, 5, 6, 3, 6, 6, 6, 4, 6, 3, 1, 6, 3, 6, 6, 6, 3, 1, 6, 2, 3, 2, 6, 4, 5, 5, 2, 3, 6, 2, 6, 6, 6, 6, 6, 6, 2, 5, 1, 5, 1, 6, 3, 1};
+    int pv1[60] = {3, 1, 5, 1, 1, 6, 2, 4, 6, 4, 4, 6, 6, 4, 4, 2, 4, 5, 3, 1, 1, 3, 2, 1, 6, 3, 1, 1, 6, 4, 1, 5, 2, 1, 3, 3, 6, 2, 5, 1, 4, 4, 5, 4, 3, 6, 3, 1, 6, 5, 6, 6, 2, 6, 5, 6, 6, 6, 6, 6};
+    int pl1[60] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    int pv2[60] = {6, 5, 1, 1, 6, 6, 4, 5, 3, 1, 3, 2, 6, 5, 1, 2, 4, 5, 6, 3, 6, 6, 6, 4, 6, 3, 1, 6, 3, 6, 6, 6, 3, 1, 6, 2, 3, 2, 6, 4, 5, 5, 2, 3, 6, 2, 6, 6, 6, 6, 6, 6, 2, 5, 1, 5, 1, 6, 3, 1};
+    int pl2[60] = {0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+
     int pv3[60] = {2, 2, 2, 5, 5, 5, 4, 4, 1, 6, 6, 6, 5, 6, 6, 5, 6, 3, 5, 6, 4, 3, 2, 4, 3, 6, 4, 1, 3, 1, 5, 1, 3, 4, 6, 5, 1, 4, 6, 3, 5, 3, 4, 1, 1, 1, 2, 6, 4, 1, 4, 6, 2, 6, 2, 5, 3, 3, 5, 6};
-
-
+    int pl3[60] = {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0};
 
     std::vector<int> seq;
     for (unsigned i=0; i<60; i++){
@@ -206,7 +209,7 @@ matrix<double> Hmm2::Viterbi(std::vector<int> sequence){
  path(sequence.size())=last_state;
  for (int i=sequence.size(); i>0;i--){
 	 path(i-1) = ptr(i,path(i));
-	 path_labels(i-1) = is_in_gesture(path(i));
+	 path_labels(i-1) = get_state_label(path(i));
  }
 
 //std::cout<<"v:"<< v << std::endl;
@@ -335,8 +338,7 @@ double Hmm2::PosterioriDecoding(std::vector<int> sequence){
 	matrix<double> p = this->P_pi_k_x(sequence);
 
 	vector<int> path(sequence.size());
-	vector<double> g(sequence.size());
-//	g.clear();
+	vector<double> g(sequence.size()); //pravdepodobnosti ze znak vypusteny v case i bol zo stavu v geste
 	for (unsigned i=0; i<sequence.size();i++){
 		/*
 		 * Prva moznost - zistit path (nemusi vsak naozaj existovat)
@@ -350,7 +352,7 @@ double Hmm2::PosterioriDecoding(std::vector<int> sequence){
 				max_k=k;
 			}
 		}
-		path(i)=max_k;
+		path(i)=this->max_k;
 		/*
 		 * Druha moznost zistit derived property v nasom pripade kategoriu (gesto-negesto)
 		 *
@@ -368,25 +370,121 @@ double Hmm2::PosterioriDecoding(std::vector<int> sequence){
 
 	std::cout<<"path:"<<path<<std::endl;
 	std::cout<<"g:"<<g<<std::endl;
-	for (unsigned i=0; i<sequence.size();i++){
-		g(i)=eexp(g(i));
-	}
-	std::cout<<"g:"<<g<<std::endl;
 	std::cout<<"pp:"<<posterior_probability<<std::endl;
 
-	return posterior_probability;
+	return 0;
 }
 
 
 
 
-bool Hmm2::is_in_gesture(int state){
-	return ( 0 < state and  state < state_gesture_count+1);
+bool Hmm2::get_state_label(int state){
+	return ( 0 < state and  state < state_gesture_count+1); //1 ak je v hladanom geste 0 inak
 }
 
 double Hmm2::g(int state){
-	if(this->is_in_gesture(state))
+	if(this->get_state_label(state))
 		return 1;
 	else
 		return 0;
 }
+
+
+
+boost::numeric::ublas::matrix<double> Hmm2::ForwardLabeled(std::vector<int> sequence,std::vector<int> labels){
+	if (sequence.size()!=labels.size())
+		raise(99);
+
+	matrix<double> f = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
+	/*
+	 * Initialization - pravdepodobnost ze zacnem (prejdem zo Start do ineho) stavu
+	 */
+	 for(unsigned i =0; i<f.size1(); i++){
+		 for(unsigned j=0; j<f.size2();j++){
+			 f(i,j) = -INFINITY;
+		 }
+	 }
+	 f(START_STATE,0) = elog(1);
+	/*
+	 *Recursion
+	 */
+	 for(unsigned i=0; i<sequence.size(); i++){ //Observation time
+		 for(int l=1; l<state_total_count; l++){ //FROM state
+			 if (labels.at(i)==this->get_state_label(l)){
+				 double logalpha=-INFINITY;
+				 for (int k=0; k<state_total_count;k++){ //TO state
+					 logalpha = elogsum(logalpha, elogproduct( f(k,i), elog(a(k,l))) );
+				 }
+				 f(l,i+1) = elogproduct(logalpha,elog(e(l,sequence.at(i))));
+			 }
+			 else
+				 f(l,i+1) = elog(0); //niesom si isty tym log()
+		 }
+	 }
+/*
+ * Termination
+ */
+	 double sum = -INFINITY;
+	 for (int k=0; k<state_total_count; k++){
+		 sum = elogsum(sum, elogproduct(f(k,sequence.size()), elog(a(k,end_state))));
+	 }
+//	 posterior_probability=sum;
+	 std::cout<<"prob:"<<exp(sum)<<std::endl;
+	 std::cout<<"f:"<<f<<std::endl;
+	 return f;
+}
+
+
+boost::numeric::ublas::matrix<double> Hmm2::BackwardLabeled(std::vector<int> sequence,std::vector<int> labels){
+	if (sequence.size()!=labels.size())
+			raise(99);
+/*
+ * Initialization
+ */
+	matrix<double> b = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
+	 for(unsigned k =0; k<b.size1(); k++){//stavy
+				b(k,sequence.size()) = elog(a(k,end_state));
+	 }
+/*
+ * Recursion
+ */
+	 for(unsigned i=sequence.size(); i>0; i--){ //Observation time
+		 for(int k=0; k<state_total_count; k++){ //FROM state
+			 if (labels.at(i)==this->get_state_label(k)){
+				 double logbeta=-INFINITY;
+				 for(int l=0; l<state_total_count; l++){//To state
+					 logbeta = elogsum(logbeta,
+										elogproduct(elog(a(k,l)),
+													elogproduct(elog(e(l, sequence.at(i-1))),
+																b(l,i)
+																)
+													)
+										);
+				 }
+				 b(k,i-1) = logbeta;
+			 }
+			 else
+				 b(k,i-1) = elog(0);
+		 }
+	 }
+/*
+ * Termination
+ */
+
+	 double sum=-INFINITY;
+	 for(int l=0;l<state_total_count;l++){
+		 sum = elogsum(sum,
+					   elogproduct(elog(a(0,l)),
+								   elogproduct(elog(e(l, sequence.at(0))),
+											   b(l,1)
+											  )
+								   )
+						);
+	 }
+//	 posterior_probability=sum;
+	 std::cout<<"b_prob:"<<exp(sum)<<std::endl;
+	 std::cout<<"b:"<<b<<std::endl;
+	 return b;
+}
+
+
