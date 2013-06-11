@@ -42,7 +42,7 @@ double elog(double x){
 		throw 20;
 }
 
-double elnsum(double log_a, double log_b){
+double elogsum(double log_a, double log_b){
 	if (log_a==-INFINITY)
 		return log_b;
 	else if(log_b==-INFINITY)
@@ -55,7 +55,7 @@ double elnsum(double log_a, double log_b){
 	}
 }
 
-double elnproduct(double log_a, double log_b){
+double elogproduct(double log_a, double log_b){
 	if (log_a ==-INFINITY or log_b==-INFINITY)
 		return -INFINITY;
 	else
@@ -121,7 +121,7 @@ int Hmm2::test(){
 
     double a = 3;
     double b = 0.012;
-    std::cout<< log(a) << " " << log(b) <<" "<<log(a+b)<<" "<< elnsum(log(a),log(b)) << std::endl;
+    std::cout<< log(a) << " " << log(b) <<" "<<log(a+b)<<" "<< elogsum(log(a),log(b)) << std::endl;
 
 //    bool tre = ;
     std::cout<<"papa "<<(log(0)==-INFINITY)<<std::endl;
@@ -215,58 +215,26 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 	 *Recursion
 	 */
 
-	 for(unsigned i=0; i<sequence.size(); i++){
-		 for(int l=1; l<state_total_count; l++){
-			 //BEGIN max+argmax+pre_sum
-			 vector<double> sum_a(state_total_count);
-			 sum_a.clear();
-			 double max_val = -INFINITY;
-			 for (int k=0; k<state_total_count;k++){
-				 double val = f(k,i) + log(a(k,l)); //LOG
-				 if (val>max_val)
-					 max_val = val;
-				 sum_a(k) = val;
+	 for(unsigned i=0; i<sequence.size(); i++){ //Observation time
+		 for(int l=1; l<state_total_count; l++){ //FROM state
+			 double logalpha=-INFINITY;
+			 for (int k=0; k<state_total_count;k++){ //TO state
+				 logalpha = elogsum(logalpha, elogproduct( f(k,i), elog(a(k,l))) );
 			 }
-			 //END max+argmax+pre_sum
-			 double sum = 0;
-			 for (int k=0; k<state_total_count; k++){
-				 double val = sum_a(k) - max_val; //shiftneme vsetky body tak aby max bol na nule
-				 std::cout<<val<<std::endl;
-				 if (val==val) //ak NIEJE pravda ze val == +-NAN ak robim rozdiel dvoch -nekonecien tak to zahodim, preco? netusim, aby to nerobilo bordel, ale v principe su to dve nuly v nelog priestore
-					 sum += exp(val);
-			 }
-			 sum = log(sum) +max_val; // +max_val
-			 f(l,i+1) = log(e(l, sequence.at(i))) + sum;
+			 f(l,i+1) = elogproduct(logalpha,elog(e(l,sequence.at(i))));
 		 }
 	 }
 /*
  * Termination
  */
 
-	 //BEGIN sum(k)(f(k,L) * a(k,0))
-	 vector<double> sum_a(state_total_count);
-	 sum_a.clear();
-	 double max = -INFINITY;
-	 unsigned L = sequence.size();
-	 for (int k=0; k<state_total_count;k++){
-		 double val = f(k,L) + log(a(k,0));
-		 if (val>max){
-			 max = val;
-		 }
-		 sum_a(k) = val;
-	 }
 
-	 double sum = 0;
+	 //sum(k)(f(k,L) * a(k,0))
+	 double sum = -INFINITY;
 	 for (int k=0; k<state_total_count; k++){
-		 double val = sum_a(k)-max;
-		 std::cout<<val<<std::endl;
-		 //if(val==val)
-			 sum += exp( val); //shiftneme vsetky body tak aby max bol na nule
+		 sum = elogsum(sum, elogproduct(f(k,sequence.size()), elog(a(k,end_state))));
 	 }
-	 //END sum(k)(f(k,L) * a(k,0))
-	 double prob = exp(max + log(sum));
-
-	 std::cout<<"prob:"<<prob<<std::endl;
+	 std::cout<<"prob:"<<exp(sum)<<std::endl;
 	 std::cout<<"f:"<<f<<std::endl;
 
 	 return f;
