@@ -339,14 +339,14 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
  * Recursion
  */
 
-	 for(unsigned i=sequence.size()-1; (int)i>0; i--){ //Observation time
+	 for(unsigned i=sequence.size(); (int)i>0; i--){ //Observation time
 		 for(int k=0; k<state_total_count; k++){ //FROM state
 			 double logbeta=-INFINITY;
 			 for(int l=0; l<state_total_count; l++){//To state
 				 if(!this->issilent(l)){ //is state silent?
 						 logbeta = elogsum(logbeta,
 										elogproduct(elog(a(k,l)),
-													elogproduct(elog(e(l, sequence.at(i))),
+													elogproduct(elog(e(l, sequence.at(i-1))),
 																b(l,i))
 													));
 				 }
