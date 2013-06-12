@@ -264,6 +264,7 @@ std::cout<<"path_labels:"<< path_labels << std::endl;
 
 boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 	matrix<double> f = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
+	matrix<double> f_filled = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
 	 for(unsigned k =0; k<f.size1(); k++){//stavy
 		 for(unsigned l =0; l<f.size2(); l++){//stavy
 				f(k,l) = NAN;
@@ -272,7 +273,7 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 	/*
 	 * Initialization - pravdepodobnost ze zacnem (prejdem zo Start do ineho) stavu
 	 */
-	 for(unsigned i =0; i<(unsigned)state_total_count; i++){
+	 for(unsigned i =0; i<f.size1(); i++){
 			 f(i,0) = -INFINITY; // log(0)
 	 }
 	 f(START_STATE,0) = 0; //log(1)
@@ -290,6 +291,7 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 				 f(l,i+1) = elogproduct(logalpha,elog(e(l,sequence.at(i))));
 			 else
 				 f(l,i+1) = logalpha;
+			 f_filled(l,i+1) = 10*i+1*l;
 		 }
 	 }
 /*
@@ -306,6 +308,7 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 	 std::cout<<"f_prob:"<<(sum)<<std::endl;
 	 std::cout<<"f(E,L):"<<f(end_state,sequence.size())<<std::endl;
 	 std::cout<<"f:"<<f<<std::endl;
+	 std::cout<<"f_f:"<<f_filled<<std::endl;
 
 	 return f;
 }
@@ -316,7 +319,6 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
  * Initialization
  */
 	matrix<double> b = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
-	matrix<double> b_filled = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
 //	 for(unsigned k =0; k<b.size1(); k++){//stavy
 //				b(k,sequence.size()) = elog(a(k,end_state));
 //	 }
@@ -329,9 +331,7 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 		 }
 	 }
 
-	b_filled.clear();
 	b(end_state,sequence.size()) = 0; //log(1)
-//	b_filled(end_state,sequence.size()) = 9;
 
 /*
  * Recursion
@@ -354,7 +354,6 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 				}
 			 }
 			 b(k,i-1) = logbeta;
-			 b_filled(k,i-1) = 1;
 		 }
 	 }
 /*
@@ -370,14 +369,12 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 											  )
 								   )
 						);
-		 std::cout<<"s:"<<(sum)<<std::endl;
 	 }
 
 	 posterior_probability=sum;
 	 std::cout<<"b_prob:"<<(sum)<<std::endl;
 	 std::cout<<"b(S,0):"<<b(START_STATE,0)<<std::endl;
 	 std::cout<<"b:"<<b<<std::endl;
-	 std::cout<<"bf:"<<b_filled<<std::endl;
 
 	 return b;
 }
