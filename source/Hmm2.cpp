@@ -163,7 +163,7 @@ int Hmm2::test(){
     int pv2[60] = {6, 5, 1, 1, 6, 6, 4, 5, 3, 1, 3, 2, 6, 5, 1, 2, 4, 5, 6, 3, 6, 6, 6, 4, 6, 3, 1, 6, 3, 6, 6, 6, 3, 1, 6, 2, 3, 2, 6, 4, 5, 5, 2, 3, 6, 2, 6, 6, 6, 6, 6, 6, 2, 5, 1, 5, 1, 6, 3, 1};
     int pl2[60] = {0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
-    int pv3[60] = {2, 2, 2, 5, 5, 5, 4, 4, 1, 6, 6, 6, 5, 6, 6, 5, 6, 3, 5, 6, 4, 3, 2, 4, 3, 6, 4, 1, 3, 1, 5, 1, 3, 4, 6, 5, 1, 4, 6, 3, 5, 3, 4, 1, 1, 1, 2, 6, 4, 1, 4, 6, 2, 6, 2, 5, 3, 3, 5, 6};
+    int pv3[60] = {2, 2, 2, 5, 5, 5, 4, 4, 1, 6, 6, 6, 5, 6, 6, 5, 6, 3, 5, 6, 4, 3, 2, 4, 3, 6, 4, 1, 3, 1, 5, 1, 3, 4, 6, 5, 1, 4, 6, 3, 5, 3, 4, 1, 1, 1, 2, 6, 4, 1, 4, 6, 2, 6, 2, 5, 3, 3, 5, 1};//6
     int pl3[60] = {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0};
 
     std::vector<int> seq;
@@ -173,19 +173,22 @@ int Hmm2::test(){
 
 
 //    this->Viterbi(seq);
-    this->Forward(seq);
+    this->Backward(seq);
 //    this->Backward(seq);
 //    this->PosterioriDecoding(seq);
 //    std::cout<<"a:"<<a<<std::endl;
 //    std::cout<<"e:"<<e<<std::endl;
-    double prev_post = posterior_probability;
+    double original_post = posterior_probability;
+    double prev_post = -INFINITY;
     int t_counter=0;
-    while(t_counter<14){
+    while(t_counter<20 && ((posterior_probability-prev_post)>0.00002)){
     	t_counter++;
+    	prev_post = posterior_probability;
     	this->BaumWelchTrainingBioStep(seq);
     	this->Backward(seq);
+    	std::cout<<"prob diff:"<<posterior_probability-prev_post<<std::endl;
     }
-    std::cout<<exp(prev_post)<<std::endl;
+    std::cout<<"original prob"<<exp(original_post)<<std::endl;
 
 //    this->Forward(seq);
 
@@ -665,7 +668,10 @@ void Hmm2::BaumWelchTrainingBioStep(std::vector<int> sequence){
 			double sum = -INFINITY;
 			for(unsigned i=0;i<sequence.size();i++){
 				if (sequence.at(i)==bi){
-					sum=elogsum(sum, elogproduct(f(k,i+1),b(k,i+1)) );
+					if(!this->issilent(k))
+						sum=elogsum(sum, elogproduct(f(k,i+1),b(k,i+1)) );
+					else
+						sum=elogsum(sum, elogproduct(f(k,i),b(k,i)) ); //i+1 (neviem preco ale toto opravilo to ze posledny stav mal emisnu pravdepodobnost nenulovu)
 				}
 			}
 			e_count(k,bi)=(elogdiv(sum,posterior_probability));
@@ -675,9 +681,10 @@ void Hmm2::BaumWelchTrainingBioStep(std::vector<int> sequence){
 
 
 	std::cout<<"acount:"<<a_count<<std::endl;
+//	std::cout<<"a_sum_count:"<<a_sum_count<<std::endl;
+
 	std::cout<<"ecount:"<<e_count<<std::endl;
-	std::cout<<"a_sum_count:"<<a_sum_count<<std::endl;
-	std::cout<<"e_sum_count:"<<e_sum_count<<std::endl;
+//	std::cout<<"e_sum_count:"<<e_sum_count<<std::endl;
 
 
 	/*
