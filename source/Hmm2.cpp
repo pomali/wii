@@ -172,13 +172,22 @@ int Hmm2::test(){
     }
 
 
-    this->Viterbi(seq);
-//    this->Forward(seq);
+//    this->Viterbi(seq);
+    this->Forward(seq);
 //    this->Backward(seq);
-    this->PosterioriDecoding(seq);
+//    this->PosterioriDecoding(seq);
 //    std::cout<<"a:"<<a<<std::endl;
 //    std::cout<<"e:"<<e<<std::endl;
-//    this->BaumWelchTrainingBioStep(seq);
+    this->BaumWelchTrainingBioStep(seq);
+    this->BaumWelchTrainingBioStep(seq);
+    this->BaumWelchTrainingBioStep(seq);
+    this->BaumWelchTrainingBioStep(seq);
+    this->BaumWelchTrainingBioStep(seq);
+    this->BaumWelchTrainingBioStep(seq);
+    this->BaumWelchTrainingBioStep(seq);
+    this->BaumWelchTrainingBioStep(seq);
+    this->BaumWelchTrainingBioStep(seq);
+
 //    this->Forward(seq);
 
 //    double a = 3;
@@ -301,7 +310,7 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 	 }
 	 posterior_probability=sum;
 	 std::cout<<"f_prob:"<<(sum)<<std::endl;
-	 std::cout<<"f(E,L):"<<f(end_state,sequence.size())<<std::endl;
+//	 std::cout<<"f(E,L):"<<f(end_state,sequence.size())<<std::endl;
 //	 std::cout<<"f:"<<f<<std::endl;
 
 	 return f;
@@ -366,7 +375,7 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 
 	 posterior_probability=sum;
 	 std::cout<<"b_prob:"<<(sum)<<std::endl;
-	 std::cout<<"b(S,0):"<<b(START_STATE,0)<<std::endl;
+//	 std::cout<<"b(S,0):"<<b(START_STATE,0)<<std::endl;
 //	 std::cout<<"b:"<<b<<std::endl;
 
 	 return b;
@@ -605,8 +614,6 @@ void Hmm2::BaumWelchTrainingBioStep(std::vector<int> sequence){
 	vector<double> a_sum_count(state_total_count);
 	vector<double> e_sum_count(state_total_count);
 
-	std::cout<<"b:"<<b<<std::endl;
-
 	/*
 	 * Hladame (odhadujeme) pocet pouziti spojeni medzi vrcholmi
 	 */
@@ -632,7 +639,7 @@ void Hmm2::BaumWelchTrainingBioStep(std::vector<int> sequence){
 							  )
 							);
 				}
-				if(this->issilent(l))
+				/*if(this->issilent(l))
 					std::cerr<<sum
 						<<"s"<<(s.find(l)!=s.end())
 						<<" a:"<<a(k,l)
@@ -642,7 +649,7 @@ void Hmm2::BaumWelchTrainingBioStep(std::vector<int> sequence){
 						<<" k:"<<k
 						<<" l:"<<l
 						<<" i:"<<i
-						<<std::endl;
+						<<std::endl;*/
 			}
 			a_count(k,l) = (elogdiv(sum, posterior_probability));
 			a_sum_count(k) = elogsum(a_sum_count(k), a_count(k,l));
@@ -665,10 +672,10 @@ void Hmm2::BaumWelchTrainingBioStep(std::vector<int> sequence){
 		}
 	}
 
-	std::cout<<"acount:"<<a_count<<std::endl;
-	std::cout<<"ecount:"<<e_count<<std::endl;
-	std::cout<<"a_sum_count:"<<a_sum_count<<std::endl;
-	std::cout<<"e_sum_count:"<<e_sum_count<<std::endl;
+//	std::cout<<"acount:"<<a_count<<std::endl;
+//	std::cout<<"ecount:"<<e_count<<std::endl;
+//	std::cout<<"a_sum_count:"<<a_sum_count<<std::endl;
+//	std::cout<<"e_sum_count:"<<e_sum_count<<std::endl;
 
 	/*
 	 * Zmenit model ... toto by sa malo diat iba raz za iteraciu, predosle by malo pre kazdu sekvenciu
