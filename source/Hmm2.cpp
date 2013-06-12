@@ -322,7 +322,10 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 //	 }
 	 for(unsigned k =0; k<b.size1(); k++){//stavy
 		 for(unsigned l =0; l<b.size2(); l++){//stavy
-				b(k,l) = NAN;
+			 if(l==sequence.size())
+				 b(k,l) = 0;
+			 else
+				 b(k,l) = NAN;
 		 }
 	 }
 
@@ -335,7 +338,7 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
  */
 
 	 for(unsigned i=sequence.size(); (int)i>0; i--){ //Observation time
-		 for(int k=end_state; k>0; k--){ //FROM state
+		 for(int k=0; k<state_total_count; k++){ //FROM state
 			 double logbeta=-INFINITY;
 			 for(int l=0; l<state_total_count; l++){//To state
 				 if(!this->issilent(l) && i!=0){ //is state silent?
@@ -351,6 +354,7 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 				}
 			 }
 			 b(k,i-1) = logbeta;
+			 b_filled(k,i-1) = 1;
 		 }
 	 }
 /*
