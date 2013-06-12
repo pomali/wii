@@ -158,20 +158,20 @@ int Hmm2::test(){
 
     this->init();
 #define LEN 60
-    int pv1[60] = {3, 1, 5, 1, 1, 6, 2, 4, 6, 4, 4, 6, 6, 4, 4, 2, 4, 5, 3, 1, 1, 3, 2, 1, 6, 3, 1, 1, 6, 4, 1, 5, 2, 1, 3, 3, 6, 2, 5, 1, 4, 4, 5, 4, 3, 6, 3, 1, 6, 5, 6, 6, 2, 6, 5, 6, 6, 6, 6, 6};
-    int pl1[60] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    int pv1[LEN] = {3, 1, 5, 1, 1, 6, 2, 4, 6, 4, 4, 6, 6, 4, 4, 2, 4, 5, 3, 1, 1, 3, 2, 1, 6, 3, 1, 1, 6, 4, 1, 5, 2, 1, 3, 3, 6, 2, 5, 1, 4, 4, 5, 4, 3, 6, 3, 1, 6, 5, 6, 6, 2, 6, 5, 6, 6, 6, 6, 6};
+    int pl1[LEN] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    int pv2[60] = {6, 5, 1, 1, 6, 6, 4, 5, 3, 1, 3, 2, 6, 5, 1, 2, 4, 5, 6, 3, 6, 6, 6, 4, 6, 3, 1, 6, 3, 6, 6, 6, 3, 1, 6, 2, 3, 2, 6, 4, 5, 5, 2, 3, 6, 2, 6, 6, 6, 6, 6, 6, 2, 5, 1, 5, 1, 6, 3, 1};
-    int pl2[60] = {0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    int pv2[LEN] = {6, 5, 1, 1, 6, 6, 4, 5, 3, 1, 3, 2, 6, 5, 1, 2, 4, 5, 6, 3, 6, 6, 6, 4, 6, 3, 1, 6, 3, 6, 6, 6, 3, 1, 6, 2, 3, 2, 6, 4, 5, 5, 2, 3, 6, 2, 6, 6, 6, 6, 6, 6, 2, 5, 1, 5, 1, 6, 3, 1};
+    int pl2[LEN] = {0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
     int pv3[LEN] = {2, 2, 2, 5, 5, 5, 4, 4, 1, 6, 6, 6, 5, 6, 6, 5, 6, 3, 5, 6, 4, 3, 2, 4, 3, 6, 4, 1, 3, 1, 5, 1, 3, 4, 6, 5, 1, 4, 6, 3, 5, 3, 4, 1, 1, 1, 2, 6, 4, 1, 4, 6, 2, 6, 2, 5, 3, 3, 5, 1};//6
-    int pl3[60] = {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0};
+    int pl3[LEN] = {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0};
 
     std::vector<int> seq;
     std::vector<int> lbl;
     for (unsigned i=0; i<LEN; i++){
-    	seq.push_back(pv1[i]-1); //kocky su cislovane od 1 po 6, stavy od 0 po 5
-    	lbl.push_back(pl1[i]);
+    	seq.push_back(pv3[i]-1); //kocky su cislovane od 1 po 6, stavy od 0 po 5
+    	lbl.push_back(pl3[i]);
     }
 //    for (unsigned i=0; i<LEN; i++){
 //    	seq.push_back(pv2[i]-1); //kocky su cislovane od 1 po 6, stavy od 0 po 5
@@ -743,8 +743,9 @@ void Hmm2::BaumWelchTrainingBioLabeled(std::vector<int> sequence, std::vector<in
     	t_counter++;
     	prev_post = posterior_probability;
     	this->BaumWelchTrainingBioStepLabeled(sequence,labels);
-    	this->ForwardLabeled(sequence,labels);
-    	this->BackwardLabeled(sequence,labels);
+//    	this->ForwardLabeled(sequence,labels);
+    	this->Backward(sequence);
+//    	this->BackwardLabeled(sequence,labels);
     	std::cout<<"posterior:"<<(posterior_probability)<<" delta:"<<elogsum(-prev_post,posterior_probability)<<std::endl;
 
     }
@@ -826,11 +827,10 @@ void Hmm2::BaumWelchTrainingBioStepLabeled(std::vector<int> sequence, std::vecto
 	}
 
 
-//	std::cout<<"acount:"<<a_count<<std::endl;
-//	std::cout<<"a_sum_count:"<<a_sum_count<<std::endl;
-
-//	std::cout<<"ecount:"<<e_count<<std::endl;
-//	std::cout<<"e_sum_count:"<<e_sum_count<<std::endl;
+	std::cout<<"acount:"<<a_count<<std::endl;
+	std::cout<<"a_sum_count:"<<a_sum_count<<std::endl;
+	std::cout<<"ecount:"<<e_count<<std::endl;
+	std::cout<<"e_sum_count:"<<e_sum_count<<std::endl;
 
 
 	/*
