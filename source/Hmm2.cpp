@@ -172,10 +172,10 @@ int Hmm2::test(){
     }
 
 
-//    this->Viterbi(seq);
-    this->Forward(seq);
-    this->Backward(seq);
-//    this->PosterioriDecoding(seq);
+    this->Viterbi(seq);
+//    this->Forward(seq);
+//    this->Backward(seq);
+    this->PosterioriDecoding(seq);
 //    std::cout<<"a:"<<a<<std::endl;
 //    std::cout<<"e:"<<e<<std::endl;
 //    this->BaumWelchTrainingBioStep(seq);
@@ -252,7 +252,7 @@ matrix<double> Hmm2::Viterbi(std::vector<int> sequence){
  }
 
 //std::cout<<"v:"<< v << std::endl;
-std::cout<<"path_prob:"<< exp(path_prob)<<std::endl;
+std::cout<<"path_prob:"<< (path_prob)<<std::endl;
 //std::cout<<"path:"<< path << std::endl;
 std::cout<<"path_labels:"<< path_labels << std::endl;
 //std::cout<<"ptr:"<< ptr << std::endl;
@@ -280,7 +280,7 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 	/*
 	 *Recursion
 	 */
-
+f_filled.clear();
 	 for(unsigned i=0; i<sequence.size(); i++){ //Observation time
 		 for(int l=0; l<state_total_count; l++){ //FROM state
 			 double logalpha=-INFINITY;
@@ -291,15 +291,14 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 				 f(l,i+1) = elogproduct(logalpha,elog(e(l,sequence.at(i))));
 			 else
 				 f(l,i+1) = logalpha;
-			 f_filled(l,i+1) = 10*i+1*l;
+			 f_filled(l,i+1) =  f_filled(l,i)+1;
+
 		 }
 	 }
 /*
  * Termination
  */
 
-
-	 //sum(k)(f(k,L) * a(k,0))
 	 double sum = -INFINITY;
 	 for (int k=0; k<state_total_count; k++){
 		 sum = elogsum(sum, elogproduct(f(k,sequence.size()), elog(a(k,end_state))));
@@ -341,16 +340,15 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 		 for(int k=0; k<state_total_count; k++){ //FROM state
 			 double logbeta=-INFINITY;
 			 for(int l=0; l<state_total_count; l++){//To state
-				 if(!this->issilent(l) && i!=0){ //is state silent?
-					 logbeta = elogsum(logbeta,
+				 if(!this->issilent(l)){ //is state silent?
+						 logbeta = elogsum(logbeta,
 										elogproduct(elog(a(k,l)),
 													elogproduct(elog(e(l, sequence.at(i-1))),
 																b(l,i))
 													));
-
 				 }
 				else{
-					 logbeta = elogsum(logbeta, elogproduct(elog(a(k,l)),b(l,i-1)));
+					 logbeta = elogsum(logbeta, elogproduct(elog(a(k,l)),b(l,i)));
 				}
 			 }
 			 b(k,i-1) = logbeta;
@@ -469,7 +467,7 @@ double Hmm2::g(int state){
 }
 
 bool Hmm2::issilent(int state){
-	return false;//(s.find(state)!=s.end());
+	return (s.find(state)!=s.end());
 }
 
 
