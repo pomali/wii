@@ -13,6 +13,7 @@
 #include <boost/numeric/ublas/matrix_proxy.hpp>
 #include <boost/numeric/ublas/io.hpp>
 #include <cmath>
+#include <boost/foreach.hpp>
 
 
 #define START_STATE 0
@@ -46,6 +47,8 @@ public:
 	void BaumWelchTraining(std::vector<int> sequence);
 	void BaumWelchTrainingBio(std::vector<int> sequence);
 	void BaumWelchTrainingBioStep(std::vector<int> sequence);
+	void BaumWelchTrainingBioLabeled(std::vector<int> sequence, std::vector<int> labels);
+	void BaumWelchTrainingBioStepLabeled(std::vector<int> sequence, std::vector<int> labels);
 	bool get_state_label(int state);
 	double g(int state);
 	bool issilent(int state);

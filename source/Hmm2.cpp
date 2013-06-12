@@ -85,7 +85,7 @@ bool Hmm2::init(){
 	s.insert(START_STATE); //0 je zaciatocny stav ktory je silent
 	s.insert(end_state); //posledny stav je silent
 
-	this->init_known_casino();
+	this->init_unknown_casino();
 
 	return true;
 }
@@ -157,30 +157,48 @@ int Hmm2::test(){
 	using namespace boost::numeric::ublas;
 
     this->init();
-#define LEN 2
+#define LEN 60
     int pv1[60] = {3, 1, 5, 1, 1, 6, 2, 4, 6, 4, 4, 6, 6, 4, 4, 2, 4, 5, 3, 1, 1, 3, 2, 1, 6, 3, 1, 1, 6, 4, 1, 5, 2, 1, 3, 3, 6, 2, 5, 1, 4, 4, 5, 4, 3, 6, 3, 1, 6, 5, 6, 6, 2, 6, 5, 6, 6, 6, 6, 6};
     int pl1[60] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     int pv2[60] = {6, 5, 1, 1, 6, 6, 4, 5, 3, 1, 3, 2, 6, 5, 1, 2, 4, 5, 6, 3, 6, 6, 6, 4, 6, 3, 1, 6, 3, 6, 6, 6, 3, 1, 6, 2, 3, 2, 6, 4, 5, 5, 2, 3, 6, 2, 6, 6, 6, 6, 6, 6, 2, 5, 1, 5, 1, 6, 3, 1};
     int pl2[60] = {0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
-    int pv3[LEN] = {2, 2};//, 2, 5, 5, 5, 4, 4, 1, 6, 6, 6, 5, 6, 6, 5, 6, 3, 5, 6, 4, 3, 2, 4, 3, 6, 4, 1, 3, 1, 5, 1, 3, 4, 6, 5, 1, 4, 6, 3, 5, 3, 4, 1, 1, 1, 2, 6, 4, 1, 4, 6, 2, 6, 2, 5, 3, 3, 5, 1};//6
+    int pv3[LEN] = {2, 2, 2, 5, 5, 5, 4, 4, 1, 6, 6, 6, 5, 6, 6, 5, 6, 3, 5, 6, 4, 3, 2, 4, 3, 6, 4, 1, 3, 1, 5, 1, 3, 4, 6, 5, 1, 4, 6, 3, 5, 3, 4, 1, 1, 1, 2, 6, 4, 1, 4, 6, 2, 6, 2, 5, 3, 3, 5, 1};//6
     int pl3[60] = {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0};
 
     std::vector<int> seq;
+    std::vector<int> lbl;
     for (unsigned i=0; i<LEN; i++){
-    	seq.push_back(pv3[i]-1); //kocky su cislovane od 1 po 6, stavy od 0 po 5
+    	seq.push_back(pv1[i]-1); //kocky su cislovane od 1 po 6, stavy od 0 po 5
+    	lbl.push_back(pl1[i]);
     }
+//    for (unsigned i=0; i<LEN; i++){
+//    	seq.push_back(pv2[i]-1); //kocky su cislovane od 1 po 6, stavy od 0 po 5
+//    	lbl.push_back(pl2[i]);
+//    }
+//    for (unsigned i=0; i<LEN; i++){
+//    	seq.push_back(pv3[i]-1); //kocky su cislovane od 1 po 6, stavy od 0 po 5
+//    	lbl.push_back(pl3[i]);
+//    }
 
 
-//    this->Viterbi(seq);
+    this->Viterbi(seq);
 //    this->Forward(seq);
 //    this->Backward(seq);
 //    this->PosterioriDecoding(seq);
     std::cout<<"a:"<<a<<std::endl;
     std::cout<<"e:"<<e<<std::endl;
 
-    this->BaumWelchTrainingBio(seq);
+//    this->BaumWelchTrainingBio(seq);
+	this->BaumWelchTrainingBioLabeled(seq,lbl);
+	this->Viterbi(seq);
+	std::cout<<"original labels:";
+	BOOST_FOREACH(int i, lbl)
+			std::cout<<i<<" ";
+		std::cout<<std::endl;
+    std::cout<<"a:"<<a<<std::endl;
+    std::cout<<"e:"<<e<<std::endl;
 
 
 //    this->Forward(seq);
@@ -288,7 +306,6 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 			 for (int k=0; k<state_total_count;k++){ //TO state
 				 logalpha = elogsum(logalpha, elogproduct( f(k,i), elog(a(k,l))) );
 			 }
-			 std::cerr<< std::endl;
 			 if(!this->issilent(l)) //is state silent?
 				 f(l,i+1) = elogproduct(logalpha,
 						 elog(e(l,sequence.at(i))));
@@ -305,9 +322,9 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 		 sum = elogsum(sum, elogproduct(f(k,sequence.size()), elog(a(k,end_state))));
 	 }
 	 posterior_probability=sum;
-	 std::cout<<"f_prob:"<<(sum)<<std::endl;
+//	 std::cout<<"f_prob:"<<(sum)<<std::endl;
 //	 std::cout<<"f(E,L):"<<f(end_state,sequence.size())<<std::endl; //nemaju sa rovnat
-	 std::cout<<"f:"<<f<<std::endl;
+//	 std::cout<<"f:"<<f<<std::endl;
 
 	 return f;
 }
@@ -371,9 +388,9 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 	 }
 
 	 posterior_probability=sum;
-	 std::cout<<"b_prob:"<<(sum)<<std::endl;
+//	 std::cout<<"b_prob:"<<(sum)<<std::endl;
 //	 std::cout<<"b(S,0):"<<b(START_STATE,0)<<std::endl;
-	 std::cout<<"b:"<<b<<std::endl;
+//	 std::cout<<"b:"<<b<<std::endl;
 
 	 return b;
 }
@@ -476,126 +493,127 @@ boost::numeric::ublas::matrix<double> Hmm2::ForwardLabeled(std::vector<int> sequ
 		throw 99;
 
 	matrix<double> f = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
+	 for(unsigned k =0; k<f.size1(); k++){//stavy
+		 for(unsigned l =0; l<f.size2(); l++){//stavy
+				f(k,l) = NAN;
+		 }
+	 }
 	/*
 	 * Initialization - pravdepodobnost ze zacnem (prejdem zo Start do ineho) stavu
 	 */
 	 for(unsigned i =0; i<f.size1(); i++){
-		 for(unsigned j=0; j<f.size2();j++){
-			 f(i,j) = -INFINITY;
-		 }
+			 f(i,0) = -INFINITY; // log(0)
 	 }
-	 f(START_STATE,0) = elog(1);
+	 f(START_STATE,0) = 0; //log(1)
 	/*
 	 *Recursion
 	 */
 	 for(unsigned i=0; i<sequence.size(); i++){ //Observation time
-		 for(int l=1; l<state_total_count; l++){ //FROM state
-			 if (labels.at(i)==this->get_state_label(l)){
+		 for(int l=0; l<state_total_count; l++){ //FROM state
+			 if(this->get_state_label(l)==labels.at(i)){
 				 double logalpha=-INFINITY;
 				 for (int k=0; k<state_total_count;k++){ //TO state
 					 logalpha = elogsum(logalpha, elogproduct( f(k,i), elog(a(k,l))) );
 				 }
-				 f(l,i+1) = elogproduct(logalpha,elog(e(l,sequence.at(i))));
+				 if(!this->issilent(l)) //is state silent?
+					 f(l,i+1) = elogproduct(logalpha,
+							 elog(e(l,sequence.at(i))));
+				 else
+					 f(l,i+1) = logalpha;
 			 }
 			 else
-				 f(l,i+1) = elog(0); //niesom si isty tym log()
+				 f(l,i+1) = -INFINITY;
 		 }
 	 }
 /*
  * Termination
  */
+
 	 double sum = -INFINITY;
 	 for (int k=0; k<state_total_count; k++){
 		 sum = elogsum(sum, elogproduct(f(k,sequence.size()), elog(a(k,end_state))));
 	 }
-//	 posterior_probability=sum;
-	 std::cout<<"prob:"<<exp(sum)<<std::endl;
-	 std::cout<<"f:"<<f<<std::endl;
+	 posterior_probability=sum;
+//	 std::cout<<"f_prob:"<<(sum)<<std::endl;
+//	 std::cout<<"f(E,L):"<<f(end_state,sequence.size())<<std::endl; //nemaju sa rovnat
+//	 std::cout<<"f:"<<f<<std::endl;
+
 	 return f;
+
 }
 
 
 boost::numeric::ublas::matrix<double> Hmm2::BackwardLabeled(std::vector<int> sequence,std::vector<int> labels){
 	if (sequence.size()!=labels.size())
 			throw 99;
-/*
- * Initialization
- */
-	matrix<double> b = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
-	 for(unsigned k =0; k<b.size1(); k++){//stavy
-				b(k,sequence.size()) = elog(a(k,end_state));
-	 }
-/*
- * Recursion
- */
-	 for(unsigned i=sequence.size(); i>0; i--){ //Observation time
-		 for(int k=0; k<state_total_count; k++){ //FROM state
-			 if (labels.at(i)==this->get_state_label(k)){
-				 double logbeta=-INFINITY;
-				 for(int l=0; l<state_total_count; l++){//To state
-					 logbeta = elogsum(logbeta,
-										elogproduct(elog(a(k,l)),
-													elogproduct(elog(e(l, sequence.at(i-1))),
-																b(l,i)
-																)
-													)
-										);
+	/*
+	 * Initialization
+	 */
+		matrix<double> b = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
+
+			 for(unsigned k =0; k<b.size1(); k++){//stavy
+				 for(unsigned l =0; l<b.size2(); l++){//stavy
+					 if(l==sequence.size())
+						 b(k,l) = elog(0);
+					 else
+						 b(k,l) = NAN;
 				 }
-				 b(k,i-1) = logbeta;
 			 }
-			 else
-				 b(k,i-1) = elog(0);
+			b(end_state,sequence.size()) = 0; //log(1)
+
+		 for(unsigned k =0; k<b.size1(); k++){//stavy
+					b(k,sequence.size()-1) = elog(a(k,end_state));
 		 }
-	 }
-/*
- * Termination
- */
 
-	 double sum=-INFINITY;
-	 for(int l=0;l<state_total_count;l++){
-		 sum = elogsum(sum,
-					   elogproduct(elog(a(0,l)),
-								   elogproduct(elog(e(l, sequence.at(0))),
-											   b(l,1)
-											  )
-								   )
-						);
-	 }
-//	 posterior_probability=sum;
-	 std::cout<<"b_prob:"<<exp(sum)<<std::endl;
-	 std::cout<<"b:"<<b<<std::endl;
-	 return b;
+	/*
+	 * Recursion
+	 */
+
+		 for(unsigned i=sequence.size()-1; (int)i>0; i--){ //Observation time
+			 for(int k=0; k<state_total_count; k++){ //FROM state
+				 if(this->get_state_label(k)==labels.at(i-1)){
+					 double logbeta=-INFINITY;
+					 for(int l=0; l<state_total_count; l++){//To state
+						 if(!this->issilent(l)){ //is state silent?
+								 logbeta = elogsum(logbeta,
+												elogproduct(elog(a(k,l)),
+															elogproduct(elog(e(l, sequence.at(i-1))),
+																		b(l,i))
+															));
+						 }
+						else{
+							 logbeta = elogsum(logbeta, elogproduct(elog(a(k,l)),b(l,i)));
+						}
+					 }
+					 b(k,i-1) = logbeta;
+				 }
+				 else
+					 b(k,i-1) = -INFINITY;
+			 }
+		 }
+	/*
+	 * Termination
+	 */
+
+		 double sum=-INFINITY;
+		 for(int l=0;l<state_total_count;l++){
+			 sum = elogsum(sum,
+						   elogproduct(elog(a(0,l)),
+									   elogproduct(elog(e(l, sequence.at(0))),
+												   b(l,0)
+												  )
+									   )
+							);
+		 }
+
+		 posterior_probability=sum;
+	//	 std::cout<<"b_prob:"<<(sum)<<std::endl;
+	//	 std::cout<<"b(S,0):"<<b(START_STATE,0)<<std::endl;
+	//	 std::cout<<"b:"<<b<<std::endl;
+
+		 return b;
 }
 
-
-void Hmm2::BaumWelchTraining(std::vector<int> sequence){
-/*
-	matrix<double> es(sequence.size(),state_total_count, state_total_count);
-	for(unsigned t=0; t<sequence.size(); t++){
-		double normalizer = -INFINITY;
-		for (int i=0; i<state_total_count; i++){
-			for(int j=0;  j<state_total_count; j++){
-				es(t, i,j) = elogproduct(	f(i,t),
-										elogproduct(elog(a(i,j)),
-													elogproduct(b(i,t+1),
-																elog(e(j, sequence.at(t+1)))
-																)
-													)
-									);
-				normalizer = elogsum(normalizer, es(t, i,j));
-			}
-		}
-		for (int i=0;i<state_total_count; i++){
-			for(int j=0; j<state_total_count; j++){
-				es(t, i, j) = elogproduct(es(t,i,j), -normalizer);
-			}
-		}
-
-	}
-
-*/
-
-}
 
 
 void Hmm2::BaumWelchTrainingBio(std::vector<int> sequence){
@@ -608,15 +626,17 @@ void Hmm2::BaumWelchTrainingBio(std::vector<int> sequence){
     	t_counter++;
     	prev_post = posterior_probability;
     	this->BaumWelchTrainingBioStep(sequence);
-        std::cout<<"a:"<<a<<std::endl;
-        std::cout<<"e:"<<e<<std::endl;
     	this->Forward(sequence);
     	this->Backward(sequence);
-    	std::cout<<"posterior:"<<(posterior_probability)<<" previous:"<<prev_post<<" prob diff:"<<elogsum(-prev_post,posterior_probability)<<std::endl;
+    	std::cout<<"posterior:"<<(posterior_probability)<<" delta:"<<elogsum(-prev_post,posterior_probability)<<std::endl;
 
     }
-    std::cout<<"original prob:"<<exp(original_post)<<" now:"<<exp(posterior_probability)<<" after "<<t_counter<<" steps"<<std::endl;
+    std::cout<<"original prob:"<<exp(original_post)<<" now:"<<exp(posterior_probability)
+    		<<" after "<<t_counter<<" steps"<<std::endl
+    		<<"its "<<exp(elogdiv(posterior_probability, original_post))<<"x better"<<std::endl;
 }
+
+
 void Hmm2::BaumWelchTrainingBioStep(std::vector<int> sequence){
 	matrix<double> f = this->Forward(sequence);
 	matrix<double> b = this->Backward(sequence);
@@ -651,19 +671,19 @@ void Hmm2::BaumWelchTrainingBioStep(std::vector<int> sequence){
 							  )
 							);
 				}
-				if(l==0)
-					std::cerr
-						<<""
-						<<"sum:"<<sum
-						<<" s?="<<(s.find(l)!=s.end())
-						<<" a:"<<a(k,l)
-						<<" e:"<<e(l,sequence.at(i))
-						<<" b:"<<b(l,i+1)
-						<<" f:"<<f(k,i+1)
-						<<" k:"<<k
-						<<" l:"<<l
-						<<" i:"<<i
-						<<std::endl;
+//				if(l==0)
+//					std::cerr
+//						<<""
+//						<<"sum:"<<sum
+//						<<" s?="<<(s.find(l)!=s.end())
+//						<<" a:"<<a(k,l)
+//						<<" e:"<<e(l,sequence.at(i))
+//						<<" b:"<<b(l,i+1)
+//						<<" f:"<<f(k,i+1)
+//						<<" k:"<<k
+//						<<" l:"<<l
+//						<<" i:"<<i
+//						<<std::endl;
 			}
 			a_count(k,l) = (elogdiv(sum, posterior_probability));
 			a_sum_count(k) = elogsum(a_sum_count(k), a_count(k,l));
@@ -689,17 +709,134 @@ void Hmm2::BaumWelchTrainingBioStep(std::vector<int> sequence){
 	}
 
 
-	std::cout<<"acount:"<<a_count<<std::endl;
+//	std::cout<<"acount:"<<a_count<<std::endl;
 //	std::cout<<"a_sum_count:"<<a_sum_count<<std::endl;
 
-	std::cout<<"ecount:"<<e_count<<std::endl;
+//	std::cout<<"ecount:"<<e_count<<std::endl;
 //	std::cout<<"e_sum_count:"<<e_sum_count<<std::endl;
 
 
 	/*
 	 * Zmenit model ... toto by sa malo diat iba raz za iteraciu, predosle by malo pre kazdu sekvenciu
 	 */
-	for(unsigned k =1; k<(unsigned)state_total_count;k++){
+	for(unsigned k =1; k<(unsigned)state_total_count;k++){ // zaciatocne prob nemenit
+		for(unsigned l=0; l<(unsigned)state_total_count;l++){
+			a(k,l)= eexp(elogdiv(a_count(k,l), a_sum_count(k)));
+		}
+	}
+
+	for(unsigned k =0; k<(unsigned)state_total_count;k++){
+		for(int bi=0;bi<symbols_count;bi++){
+			e(k,bi) = eexp(elogdiv(e_count(k,bi), e_sum_count(k)));
+		}
+	}
+
+}
+
+void Hmm2::BaumWelchTrainingBioLabeled(std::vector<int> sequence, std::vector<int> labels){
+    this->Backward(sequence);
+    double original_post = posterior_probability;
+    double prev_post = -INFINITY;
+    int t_counter=0;
+    std::cout<<"Starting posterior:"<<original_post<<std::endl;
+    while(t_counter<20 && (elogsum(posterior_probability,-prev_post)>0.92)){ //minimalna zmena (v log priestore)
+    	t_counter++;
+    	prev_post = posterior_probability;
+    	this->BaumWelchTrainingBioStepLabeled(sequence,labels);
+    	this->ForwardLabeled(sequence,labels);
+    	this->BackwardLabeled(sequence,labels);
+    	std::cout<<"posterior:"<<(posterior_probability)<<" delta:"<<elogsum(-prev_post,posterior_probability)<<std::endl;
+
+    }
+    std::cout<<"original prob:"<<exp(original_post)<<" now:"<<exp(posterior_probability)
+    		<<" after "<<t_counter<<" steps"<<std::endl
+    		<<"its "<<exp(elogdiv(posterior_probability, original_post))<<"x better"<<std::endl;
+}
+
+
+void Hmm2::BaumWelchTrainingBioStepLabeled(std::vector<int> sequence, std::vector<int> labels){
+	matrix<double> f = this->ForwardLabeled(sequence,labels);
+	matrix<double> b = this->BackwardLabeled(sequence,labels);
+	matrix<double> a_count(state_total_count, state_total_count); //pocet pouziti daneho spojenia
+	matrix<double> e_count(state_total_count, symbols_count) ;
+	vector<double> a_sum_count(state_total_count);
+	vector<double> e_sum_count(state_total_count);
+
+	/*
+	 * Hladame (odhadujeme) pocet pouziti spojeni medzi vrcholmi
+	 */
+	for(unsigned k =0; k<(unsigned)state_total_count;k++){
+		a_sum_count(k) = -INFINITY;
+		for(unsigned l=0; l<(unsigned)state_total_count;l++){
+			double sum = -INFINITY;
+			for(unsigned i=0;i<sequence.size(); i++){
+				if (!this->issilent(l)){
+					sum = elogsum(sum, elogproduct(f(k,i+1),
+							elogproduct(elog(a(k,l)),
+								elogproduct(elog(e(l,sequence.at(i))), //i+1
+										b(l,i+1)
+									)
+								)
+							  )
+							);
+				}
+				else{
+					sum = elogsum(sum, elogproduct(f(k,i+1),
+							elogproduct(elog(a(k,l)),
+										b(l,i+1)
+								)
+							  )
+							);
+				}
+//				if(l==0)
+//					std::cerr
+//						<<""
+//						<<"sum:"<<sum
+//						<<" s?="<<(s.find(l)!=s.end())
+//						<<" a:"<<a(k,l)
+//						<<" e:"<<e(l,sequence.at(i))
+//						<<" b:"<<b(l,i+1)
+//						<<" f:"<<f(k,i+1)
+//						<<" k:"<<k
+//						<<" l:"<<l
+//						<<" i:"<<i
+//						<<std::endl;
+			}
+			a_count(k,l) = (elogdiv(sum, posterior_probability));
+			a_sum_count(k) = elogsum(a_sum_count(k), a_count(k,l));
+		}
+	}
+	/*
+	 * Hladame (odhadujeme) pocet emisii stavov
+	 */
+
+	for(unsigned k =0; k<(unsigned)state_total_count;k++){
+		e_sum_count(k) = -INFINITY;
+		for(int bi=0;bi<symbols_count;bi++){
+			double sum = -INFINITY;
+			for(unsigned i=0;i<sequence.size();i++){
+				if (sequence.at(i)==bi){
+					if(!this->issilent(k)) //silent states nema zmysel zapocitavat do emisii
+						sum=elogsum(sum, elogproduct(f(k,i+1),b(k,i+1)) );
+				}
+			}
+			e_count(k,bi)=(elogdiv(sum,posterior_probability));
+			e_sum_count(k) = elogsum(e_sum_count(k), e_count(k,bi));
+		}
+	}
+
+
+//	std::cout<<"acount:"<<a_count<<std::endl;
+//	std::cout<<"a_sum_count:"<<a_sum_count<<std::endl;
+
+//	std::cout<<"ecount:"<<e_count<<std::endl;
+//	std::cout<<"e_sum_count:"<<e_sum_count<<std::endl;
+
+
+	/*
+	 * Zmenit model ... toto by sa malo diat iba raz za iteraciu, predosle by malo pre kazdu sekvenciu
+	 */
+	for(unsigned k =1; k<(unsigned)state_total_count;k++){ // zaciatocne prob nemenit
 		for(unsigned l=0; l<(unsigned)state_total_count;l++){
 			a(k,l)= eexp(elogdiv(a_count(k,l), a_sum_count(k)));
 		}
