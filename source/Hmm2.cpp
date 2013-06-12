@@ -178,15 +178,14 @@ int Hmm2::test(){
 //    this->PosterioriDecoding(seq);
 //    std::cout<<"a:"<<a<<std::endl;
 //    std::cout<<"e:"<<e<<std::endl;
-    this->BaumWelchTrainingBioStep(seq);
-    this->BaumWelchTrainingBioStep(seq);
-    this->BaumWelchTrainingBioStep(seq);
-    this->BaumWelchTrainingBioStep(seq);
-    this->BaumWelchTrainingBioStep(seq);
-    this->BaumWelchTrainingBioStep(seq);
-    this->BaumWelchTrainingBioStep(seq);
-    this->BaumWelchTrainingBioStep(seq);
-    this->BaumWelchTrainingBioStep(seq);
+    double prev_post = posterior_probability;
+    int t_counter=0;
+    while(t_counter<14){
+    	t_counter++;
+    	this->BaumWelchTrainingBioStep(seq);
+    	this->Backward(seq);
+    }
+    std::cout<<exp(prev_post)<<std::endl;
 
 //    this->Forward(seq);
 
@@ -374,7 +373,7 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 	 }
 
 	 posterior_probability=sum;
-	 std::cout<<"b_prob:"<<(sum)<<std::endl;
+	 std::cout<<"b_prob:"<<exp(sum)<<std::endl;
 //	 std::cout<<"b(S,0):"<<b(START_STATE,0)<<std::endl;
 //	 std::cout<<"b:"<<b<<std::endl;
 
@@ -618,6 +617,7 @@ void Hmm2::BaumWelchTrainingBioStep(std::vector<int> sequence){
 	 * Hladame (odhadujeme) pocet pouziti spojeni medzi vrcholmi
 	 */
 	for(unsigned k =0; k<(unsigned)state_total_count;k++){
+		a_sum_count(k) = -INFINITY;
 		for(unsigned l=0; l<(unsigned)state_total_count;l++){
 			double sum = -INFINITY;
 			for(unsigned i=0;i<sequence.size(); i++){
@@ -660,6 +660,7 @@ void Hmm2::BaumWelchTrainingBioStep(std::vector<int> sequence){
 	 */
 
 	for(unsigned k =0; k<(unsigned)state_total_count;k++){
+		e_sum_count(k) = -INFINITY;
 		for(int bi=0;bi<symbols_count;bi++){
 			double sum = -INFINITY;
 			for(unsigned i=0;i<sequence.size();i++){
@@ -672,10 +673,12 @@ void Hmm2::BaumWelchTrainingBioStep(std::vector<int> sequence){
 		}
 	}
 
-//	std::cout<<"acount:"<<a_count<<std::endl;
-//	std::cout<<"ecount:"<<e_count<<std::endl;
-//	std::cout<<"a_sum_count:"<<a_sum_count<<std::endl;
-//	std::cout<<"e_sum_count:"<<e_sum_count<<std::endl;
+
+	std::cout<<"acount:"<<a_count<<std::endl;
+	std::cout<<"ecount:"<<e_count<<std::endl;
+	std::cout<<"a_sum_count:"<<a_sum_count<<std::endl;
+	std::cout<<"e_sum_count:"<<e_sum_count<<std::endl;
+
 
 	/*
 	 * Zmenit model ... toto by sa malo diat iba raz za iteraciu, predosle by malo pre kazdu sekvenciu
