@@ -253,7 +253,7 @@ matrix<double> Hmm2::Viterbi(std::vector<int> sequence){
 
 //std::cout<<"v:"<< v << std::endl;
 std::cout<<"path_prob:"<< (path_prob)<<std::endl;
-//std::cout<<"path:"<< path << std::endl;
+std::cout<<"path:"<< path << std::endl;
 std::cout<<"path_labels:"<< path_labels << std::endl;
 //std::cout<<"ptr:"<< ptr << std::endl;
 
@@ -264,7 +264,6 @@ std::cout<<"path_labels:"<< path_labels << std::endl;
 
 boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 	matrix<double> f = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
-	matrix<double> f_filled = matrix<double>(state_total_count, sequence.size()+1); //kvoli zaciatocnemu stavu
 	 for(unsigned k =0; k<f.size1(); k++){//stavy
 		 for(unsigned l =0; l<f.size2(); l++){//stavy
 				f(k,l) = NAN;
@@ -280,7 +279,6 @@ boost::numeric::ublas::matrix<double> Hmm2::Forward(std::vector<int> sequence){
 	/*
 	 *Recursion
 	 */
-f_filled.clear();
 	 for(unsigned i=0; i<sequence.size(); i++){ //Observation time
 		 for(int l=0; l<state_total_count; l++){ //FROM state
 			 double logalpha=-INFINITY;
@@ -291,8 +289,6 @@ f_filled.clear();
 				 f(l,i+1) = elogproduct(logalpha,elog(e(l,sequence.at(i))));
 			 else
 				 f(l,i+1) = logalpha;
-			 f_filled(l,i+1) =  f_filled(l,i)+1;
-
 		 }
 	 }
 /*
@@ -301,13 +297,12 @@ f_filled.clear();
 
 	 double sum = -INFINITY;
 	 for (int k=0; k<state_total_count; k++){
-		 sum = elogsum(sum, elogproduct(f(k,sequence.size()), elog(a(k,end_state))));
+		 sum = elogsum(sum, elogproduct(f(k,sequence.size()-1), elog(a(k,end_state))));
 	 }
 	 posterior_probability=sum;
 	 std::cout<<"f_prob:"<<(sum)<<std::endl;
 	 std::cout<<"f(E,L):"<<f(end_state,sequence.size())<<std::endl;
-	 std::cout<<"f:"<<f<<std::endl;
-	 std::cout<<"f_f:"<<f_filled<<std::endl;
+//	 std::cout<<"f:"<<f<<std::endl;
 
 	 return f;
 }
@@ -372,7 +367,7 @@ boost::numeric::ublas::matrix<double> Hmm2::Backward(std::vector<int> sequence){
 	 posterior_probability=sum;
 	 std::cout<<"b_prob:"<<(sum)<<std::endl;
 	 std::cout<<"b(S,0):"<<b(START_STATE,0)<<std::endl;
-	 std::cout<<"b:"<<b<<std::endl;
+//	 std::cout<<"b:"<<b<<std::endl;
 
 	 return b;
 }
@@ -386,7 +381,7 @@ matrix<double> Hmm2::P_pi_k_x(std::vector<int> sequence){
 			p(k,i)= elogdiv( elogproduct(f(k,i), b(k,i)), posterior_probability);
 		}
 	}
-	std::cout<<"p:"<<p<<std::endl;
+//	std::cout<<"p:"<<p<<std::endl;
 	return p;
 }
 
@@ -404,7 +399,7 @@ matrix<double> Hmm2::P_pi_k_x2(std::vector<int> sequence){
 			p(k,i)= elogproduct( p(k,i), -normalizer);
 		}
 	}
-	std::cout<<"p2:"<<p<<std::endl;
+//	std::cout<<"p2:"<<p<<std::endl;
 	return p;
 }
 
@@ -447,7 +442,6 @@ double Hmm2::PosterioriDecoding(std::vector<int> sequence){
 
 	std::cout<<"path:"<<path<<std::endl;
 	std::cout<<"g:"<<g<<std::endl;
-	std::cout<<"pp:"<<posterior_probability<<std::endl;
 
 	return 0;
 }
