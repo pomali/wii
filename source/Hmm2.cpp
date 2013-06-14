@@ -158,32 +158,34 @@ int Hmm2::test(){
 
     this->init();
 #define LEN 60
-    int pv1[LEN] = {3, 1, 5, 1, 1, 6, 2, 4, 6, 4, 4, 6, 6, 4, 4, 2, 4, 5, 3, 1, 1, 3, 2, 1, 6, 3, 1, 1, 6, 4, 1, 5, 2, 1, 3, 3, 6, 2, 5, 1, 4, 4, 5, 4, 3, 6, 3, 1, 6, 5, 6, 6, 2, 6, 5, 6, 6, 6, 6, 6};
-    int pl1[LEN] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    int pv1[60] = {3, 1, 5, 1, 1, 6, 2, 4, 6, 4, 4, 6, 6, 4, 4, 2, 4, 5, 3, 1, 1, 3, 2, 1, 6, 3, 1, 1, 6, 4, 1, 5, 2, 1, 3, 3, 6, 2, 5, 1, 4, 4, 5, 4, 3, 6, 3, 1, 6, 5, 6, 6, 2, 6, 5, 6, 6, 6, 6, 6};
+    int pl1[60] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    int pv2[LEN] = {6, 5, 1, 1, 6, 6, 4, 5, 3, 1, 3, 2, 6, 5, 1, 2, 4, 5, 6, 3, 6, 6, 6, 4, 6, 3, 1, 6, 3, 6, 6, 6, 3, 1, 6, 2, 3, 2, 6, 4, 5, 5, 2, 3, 6, 2, 6, 6, 6, 6, 6, 6, 2, 5, 1, 5, 1, 6, 3, 1};
-    int pl2[LEN] = {0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    int pv2[60] = {6, 5, 1, 1, 6, 6, 4, 5, 3, 1, 3, 2, 6, 5, 1, 2, 4, 5, 6, 3, 6, 6, 6, 4, 6, 3, 1, 6, 3, 6, 6, 6, 3, 1, 6, 2, 3, 2, 6, 4, 5, 5, 2, 3, 6, 2, 6, 6, 6, 6, 6, 6, 2, 5, 1, 5, 1, 6, 3, 1};
+    int pl2[60] = {0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
-    int pv3[LEN] = {2, 2, 2, 5, 5, 5, 4, 4, 1, 6, 6, 6, 5, 6, 6, 5, 6, 3, 5, 6, 4, 3, 2, 4, 3, 6, 4, 1, 3, 1, 5, 1, 3, 4, 6, 5, 1, 4, 6, 3, 5, 3, 4, 1, 1, 1, 2, 6, 4, 1, 4, 6, 2, 6, 2, 5, 3, 3, 5, 1};//6
-    int pl3[LEN] = {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0};
+    int pv3[60] = {2, 2, 2, 5, 5, 5, 4, 4, 1, 6, 6, 6, 5, 6, 6, 5, 6, 3, 5, 6, 4, 3, 2, 4, 3, 6, 4, 1, 3, 1, 5, 1, 3, 4, 6, 5, 1, 4, 6, 3, 5, 3, 4, 1, 1, 1, 2, 6, 4, 1, 4, 6, 2, 6, 2, 5, 3, 3, 5, 1};//6
+    int pl3[60] = {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0};
 
     std::vector<int> seq;
     std::vector<int> lbl;
+    std::vector<int> seq2;
+    std::vector<int> lbl2;
     for (unsigned i=0; i<LEN; i++){
     	seq.push_back(pv3[i]-1); //kocky su cislovane od 1 po 6, stavy od 0 po 5
     	lbl.push_back(pl3[i]);
     }
-//    for (unsigned i=0; i<LEN; i++){
-//    	seq.push_back(pv2[i]-1); //kocky su cislovane od 1 po 6, stavy od 0 po 5
-//    	lbl.push_back(pl2[i]);
-//    }
-//    for (unsigned i=0; i<LEN; i++){
-//    	seq.push_back(pv3[i]-1); //kocky su cislovane od 1 po 6, stavy od 0 po 5
-//    	lbl.push_back(pl3[i]);
-//    }
+    for (unsigned i=0; i<LEN; i++){
+    	seq.push_back(pv2[i]-1); //kocky su cislovane od 1 po 6, stavy od 0 po 5
+    	lbl.push_back(pl2[i]);
+    }
+    for (unsigned i=0; i<LEN; i++){
+    	seq2.push_back(pv3[i]-1); //kocky su cislovane od 1 po 6, stavy od 0 po 5
+    	lbl2.push_back(pl3[i]);
+    }
 
 
-    this->Viterbi(seq);
+    this->Viterbi(seq2);
 //    this->Forward(seq);
 //    this->Backward(seq);
 //    this->PosterioriDecoding(seq);
@@ -192,11 +194,11 @@ int Hmm2::test(){
 
 //    this->BaumWelchTrainingBio(seq);
 	this->BaumWelchTrainingBioLabeled(seq,lbl);
-	this->Viterbi(seq);
+	this->Viterbi(seq2);
 	std::cout<<"original labels:";
-	BOOST_FOREACH(int i, lbl)
-			std::cout<<i<<" ";
-		std::cout<<std::endl;
+	BOOST_FOREACH(int i, lbl2)
+				std::cout<<i<<" ";
+			std::cout<<std::endl;
     std::cout<<"a:"<<a<<std::endl;
     std::cout<<"e:"<<e<<std::endl;
 
@@ -510,7 +512,7 @@ boost::numeric::ublas::matrix<double> Hmm2::ForwardLabeled(std::vector<int> sequ
 	 */
 	 for(unsigned i=0; i<sequence.size(); i++){ //Observation time
 		 for(int l=0; l<state_total_count; l++){ //FROM state
-			 if(this->get_state_label(l)==labels.at(i)){
+			 if(this->issilent(l) || this->get_state_label(l)==labels.at(i)){
 				 double logalpha=-INFINITY;
 				 for (int k=0; k<state_total_count;k++){ //TO state
 					 logalpha = elogsum(logalpha, elogproduct( f(k,i), elog(a(k,l))) );
@@ -571,7 +573,7 @@ boost::numeric::ublas::matrix<double> Hmm2::BackwardLabeled(std::vector<int> seq
 
 		 for(unsigned i=sequence.size()-1; (int)i>0; i--){ //Observation time
 			 for(int k=0; k<state_total_count; k++){ //FROM state
-				 if(this->get_state_label(k)==labels.at(i-1)){
+				 if(this->issilent(k) || this->get_state_label(k)==labels.at(i-1)){
 					 double logbeta=-INFINITY;
 					 for(int l=0; l<state_total_count; l++){//To state
 						 if(!this->issilent(l)){ //is state silent?
@@ -763,6 +765,8 @@ void Hmm2::BaumWelchTrainingBioStepLabeled(std::vector<int> sequence, std::vecto
 	vector<double> a_sum_count(state_total_count);
 	vector<double> e_sum_count(state_total_count);
 
+	std::cout<<"f"<<f<<std::endl;
+
 	/*
 	 * Hladame (odhadujeme) pocet pouziti spojeni medzi vrcholmi
 	 */
@@ -803,7 +807,7 @@ void Hmm2::BaumWelchTrainingBioStepLabeled(std::vector<int> sequence, std::vecto
 //						<<" i:"<<i
 //						<<std::endl;
 			}
-			a_count(k,l) = (elogdiv(sum, posterior_probability));
+			a_count(k,l) = (elogdiv(elogsum(sum, -100), posterior_probability));
 			a_sum_count(k) = elogsum(a_sum_count(k), a_count(k,l));
 		}
 	}
@@ -821,7 +825,7 @@ void Hmm2::BaumWelchTrainingBioStepLabeled(std::vector<int> sequence, std::vecto
 						sum=elogsum(sum, elogproduct(f(k,i+1),b(k,i+1)) );
 				}
 			}
-			e_count(k,bi)=(elogdiv(sum,posterior_probability));
+			e_count(k,bi)=(elogdiv(elogsum(sum, -100),posterior_probability));
 			e_sum_count(k) = elogsum(e_sum_count(k), e_count(k,bi));
 		}
 	}
@@ -842,7 +846,7 @@ void Hmm2::BaumWelchTrainingBioStepLabeled(std::vector<int> sequence, std::vecto
 		}
 	}
 
-	for(unsigned k =0; k<(unsigned)state_total_count;k++){
+	for(unsigned k =1; k<(unsigned)state_total_count-1;k++){
 		for(int bi=0;bi<symbols_count;bi++){
 			e(k,bi) = eexp(elogdiv(e_count(k,bi), e_sum_count(k)));
 		}
