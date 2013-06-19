@@ -14,6 +14,7 @@
 #include <boost/numeric/ublas/io.hpp>
 #include <cmath>
 #include <boost/foreach.hpp>
+#include <fstream>
 
 
 #define START_STATE 0
@@ -35,7 +36,9 @@ public:
 	bool init();
 	void init_known_casino();
 	void init_unknown_casino();
+	void init_wii();
 	int test();
+	int wii_file();
 	boost::numeric::ublas::matrix<double> Viterbi(std::vector<int> sequence);
 	boost::numeric::ublas::matrix<double> Forward(std::vector<int> sequence);
 	boost::numeric::ublas::matrix<double> Backward(std::vector<int> sequence);

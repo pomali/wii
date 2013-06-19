@@ -185,9 +185,11 @@ int oldmain(){
 int main(int argc, char **argv){
 	//SimpleSolution ss;
 	//return ss.main();
-	Hmm2 h;
-	return h.test();
 //	Wii2 w;
-//	return w.main();
+//	w.main();
+
+	Hmm2 h;
+	return h.wii_file();
+
 //	return oldmain();
 }

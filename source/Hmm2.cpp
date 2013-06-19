@@ -78,6 +78,8 @@ double elogdiv(double log_a, double log_b){
 bool Hmm2::init(){
 	using namespace boost::numeric::ublas;
 	// matrix (rows, cols)
+	posterior_probability=0;
+	state_total_count = state_noise_count+state_gesture_count+2;
 	e = matrix<double>(state_total_count, symbols_count);	//in_state, symbol
 	a = matrix<double>(state_total_count,state_total_count); //from, to
 	end_state = state_total_count-1;
@@ -85,13 +87,18 @@ bool Hmm2::init(){
 	s.insert(START_STATE); //0 je zaciatocny stav ktory je silent
 	s.insert(end_state); //posledny stav je silent
 
-	this->init_unknown_casino();
-
 	return true;
 }
 
 void Hmm2::init_known_casino(){
 	//occasionally dishonest casino example
+	state_gesture_count = 1;
+	state_noise_count = 1;
+	state_total_count = state_noise_count+state_gesture_count+2;
+	symbols_count = 6;
+	posterior_probability=0;
+	this->init();
+
     e.clear();
     for(unsigned i=0; i<e.size1();i++){
     	if(this->get_state_label(i)){
@@ -122,6 +129,15 @@ void Hmm2::init_known_casino(){
 
 void Hmm2::init_unknown_casino(){
 	//occasionally dishonest casino example
+	state_gesture_count = 1;
+	state_noise_count = 1;
+	state_total_count = state_noise_count+state_gesture_count+2;
+	symbols_count = 6;
+	posterior_probability=0;
+
+	this->init();
+
+
     e.clear();
     for(unsigned i=0; i<e.size1();i++){
 		for (unsigned j = 0; j < e.size2(); ++ j){
@@ -152,11 +168,108 @@ void Hmm2::init_unknown_casino(){
     }
 }
 
+void Hmm2::init_wii(){
+	state_gesture_count = 3;
+	state_noise_count = 3;
+	symbols_count = 8;
+	this->init();
+
+    e.clear();
+    for(unsigned i=0; i<e.size1();i++){
+		for (unsigned j = 0; j < e.size2(); ++ j){
+			if(!this->issilent(i)) //ak sa i nenachadza v silent state
+				e(i, j) = ((double)1/symbols_count);
+			else
+				e(i,j) = 0;
+		}
+    }
+
+    for (int i=0; i<(int)a.size1();i++){
+    	for(int j=0;j<(int)a.size2();j++){
+    		if(i==end_state )
+    			a(i,j)=0;
+    		else if (i==START_STATE){
+				if (j==1 || j==state_gesture_count+1 ) //prve z gesture alebo prve z noise
+					a(i,j)=0.5;
+				else
+					a(i,j)=0;
+    		}
+    		else if (j==START_STATE)
+    			a(i,j)=0;
+    		else if (0<i && i<state_gesture_count){ //v gesture komponente
+    			if (j==i+1 || j==i)
+    				a(i,j)=0.5;
+    			else
+    				a(i,j)=0;
+    		}
+    		else if(i==state_gesture_count){
+    			if (j==end_state || j==i)
+    				a(i,j) = 0.5;
+    			else
+    				a(i,j)= 0;
+    		}
+    		else if (state_gesture_count<i && i<state_gesture_count+state_noise_count){ //v noise komponente
+    			if (j<state_gesture_count+state_noise_count+1)
+    				a(i,j)=((double) 1/(state_noise_count));
+    			else
+    				a(i,j)=0;
+    		}
+    		else if(i==state_gesture_count+state_noise_count){
+    			if (j==end_state || j==i)
+    				a(i,j) = 0.5;
+    			else
+    				a(i,j)= 0;
+    		}
+    	}
+    }
+}
+
+int Hmm2::wii_file(){
+using namespace std;
+
+	this->init_wii();
+
+	std::vector<int> data;
+	std::vector<int> labels;
+
+	ifstream is("training_data.dat", ios::binary);
+	int size2;
+	is.read((char*)&size2, sizeof(int));
+	data.resize(size2);
+	is.read((char*)&data[0], size2 * sizeof(int));
+
+	ifstream isl("training_labels.dat", ios::binary);
+	isl.read((char*)&size2, sizeof(int));
+	labels.resize(size2);
+	isl.read((char*)&labels[0], size2 * sizeof(int));
+
+	labels.resize(70);
+	data.resize(70);
+
+//	BOOST_FOREACH(int i, data)
+//		cout<<i<<" ";
+//	cout<<endl;
+//	BOOST_FOREACH(int i, labels)
+//		cout<<i<<" ";
+//	cout<<endl;
+
+    std::cout<<"a:"<<a<<std::endl;
+    std::cout<<"e:"<<e<<std::endl;
+
+	this->BaumWelchTrainingBioLabeled(data,labels);
+	this->Viterbi(data);
+	this->PosterioriDecoding(data);
+	std::cout<<"original labels:";
+	BOOST_FOREACH(int i, labels)
+				std::cout<<i<<" ";
+			std::cout<<std::endl;
+    std::cout<<"a:"<<a<<std::endl;
+    std::cout<<"e:"<<e<<std::endl;
+}
+
 
 int Hmm2::test(){
-	using namespace boost::numeric::ublas;
-
-    this->init();
+    this->init_unknown_casino();
 #define LEN 60
     int pv1[60] = {3, 1, 5, 1, 1, 6, 2, 4, 6, 4, 4, 6, 6, 4, 4, 2, 4, 5, 3, 1, 1, 3, 2, 1, 6, 3, 1, 1, 6, 4, 1, 5, 2, 1, 3, 3, 6, 2, 5, 1, 4, 4, 5, 4, 3, 6, 3, 1, 6, 5, 6, 6, 2, 6, 5, 6, 6, 6, 6, 6};
     int pl1[60] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -180,6 +293,12 @@ int Hmm2::test(){
     	lbl.push_back(pl2[i]);
     }
     for (unsigned i=0; i<LEN; i++){
+        	seq.push_back(pv3[i]-1); //kocky su cislovane od 1 po 6, stavy od 0 po 5
+        	lbl.push_back(pl3[i]);
+        }
+
+
+    for (unsigned i=0; i<LEN; i++){
     	seq2.push_back(pv3[i]-1); //kocky su cislovane od 1 po 6, stavy od 0 po 5
     	lbl2.push_back(pl3[i]);
     }
@@ -195,6 +314,7 @@ int Hmm2::test(){
 //    this->BaumWelchTrainingBio(seq);
 	this->BaumWelchTrainingBioLabeled(seq,lbl);
 	this->Viterbi(seq2);
+	this->PosterioriDecoding(seq2);
 	std::cout<<"original labels:";
 	BOOST_FOREACH(int i, lbl2)
 				std::cout<<i<<" ";
@@ -275,9 +395,9 @@ matrix<double> Hmm2::Viterbi(std::vector<int> sequence){
  }
 
 //std::cout<<"v:"<< v << std::endl;
-std::cout<<"path_prob:"<< (path_prob)<<std::endl;
-std::cout<<"path:"<< path << std::endl;
-std::cout<<"path_labels:"<< path_labels << std::endl;
+//std::cout<<"path_prob:"<< (path_prob)<<std::endl;
+//std::cout<<"path:"<< path << std::endl;
+std::cout<<"V path_labels:"<< path_labels << std::endl;
 //std::cout<<"ptr:"<< ptr << std::endl;
 
  return v;
@@ -465,8 +585,8 @@ double Hmm2::PosterioriDecoding(std::vector<int> sequence){
 	}
 
 
-	std::cout<<"path:"<<path<<std::endl;
-	std::cout<<"g:"<<g<<std::endl;
+	std::cout<<"PD path:"<<path<<std::endl;
+//	std::cout<<"g:"<<g<<std::endl;
 
 	return 0;
 }
@@ -741,7 +861,7 @@ void Hmm2::BaumWelchTrainingBioLabeled(std::vector<int> sequence, std::vector<in
     double prev_post = -INFINITY;
     int t_counter=0;
     std::cout<<"Starting posterior:"<<original_post<<std::endl;
-    while(t_counter<20 && (elogsum(posterior_probability,-prev_post)>0.92)){ //minimalna zmena (v log priestore)
+    while(t_counter<1 && (elogsum(posterior_probability,-prev_post)>0.92)){ //minimalna zmena (v log priestore)
     	t_counter++;
     	prev_post = posterior_probability;
     	this->BaumWelchTrainingBioStepLabeled(sequence,labels);
@@ -765,7 +885,7 @@ void Hmm2::BaumWelchTrainingBioStepLabeled(std::vector<int> sequence, std::vecto
 	vector<double> a_sum_count(state_total_count);
 	vector<double> e_sum_count(state_total_count);
 
-	std::cout<<"f"<<f<<std::endl;
+	std::cout<<"b"<<b<<std::endl;
 
 	/*
 	 * Hladame (odhadujeme) pocet pouziti spojeni medzi vrcholmi
@@ -793,21 +913,26 @@ void Hmm2::BaumWelchTrainingBioStepLabeled(std::vector<int> sequence, std::vecto
 							  )
 							);
 				}
-//				if(l==0)
-//					std::cerr
-//						<<""
-//						<<"sum:"<<sum
-//						<<" s?="<<(s.find(l)!=s.end())
-//						<<" a:"<<a(k,l)
-//						<<" e:"<<e(l,sequence.at(i))
-//						<<" b:"<<b(l,i+1)
-//						<<" f:"<<f(k,i+1)
-//						<<" k:"<<k
-//						<<" l:"<<l
-//						<<" i:"<<i
-//						<<std::endl;
+				if(l==1)
+					std::cerr
+						<<""
+						<<"sum:"<<sum
+						<<" s?="<<(s.find(l)!=s.end())
+						<<" a:"<<a(k,l)
+						<<" e:"<<e(l,sequence.at(i))
+						<<" b:"<<b(l,i+1)
+						<<" f:"<<f(k,i+1)
+						<<" k:"<<k
+						<<" l:"<<l
+						<<" i:"<<i
+						<<std::endl;
 			}
-			a_count(k,l) = (elogdiv(elogsum(sum, -100), posterior_probability));
+			double bias;
+			if (k==(unsigned)end_state || l==0 )
+				bias = -INFINITY;
+			else
+				bias = -100;
+			a_count(k,l) = (elogdiv(elogsum(sum, bias), posterior_probability));
 			a_sum_count(k) = elogsum(a_sum_count(k), a_count(k,l));
 		}
 	}
@@ -825,7 +950,7 @@ void Hmm2::BaumWelchTrainingBioStepLabeled(std::vector<int> sequence, std::vecto
 						sum=elogsum(sum, elogproduct(f(k,i+1),b(k,i+1)) );
 				}
 			}
-			e_count(k,bi)=(elogdiv(elogsum(sum, -100),posterior_probability));
+			e_count(k,bi)=(elogdiv(elogsum(sum, -1000),posterior_probability));
 			e_sum_count(k) = elogsum(e_sum_count(k), e_count(k,bi));
 		}
 	}
